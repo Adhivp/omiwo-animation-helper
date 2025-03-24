@@ -100,6 +100,11 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-playfair;
   }
+  
+  /* Add page load animation */
+  body.loaded .fade-in {
+    animation: fadeIn 1.2s ease-out forwards;
+  }
 }
 
 @layer components {
@@ -116,7 +121,7 @@
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-omiwo-blue to-omiwo-teal;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-omiwo-blue via-omiwo-teal to-blue-500;
   }
 
   .liquid-button {
@@ -125,11 +130,37 @@
 
   .liquid-button::before {
     content: '';
-    @apply absolute inset-0 bg-omiwo-teal opacity-0 transition-opacity duration-300;
+    @apply absolute inset-0 bg-gradient-to-r from-omiwo-teal to-blue-500 opacity-0 transition-opacity duration-300;
   }
 
   .liquid-button:hover::before {
     @apply opacity-100;
+  }
+  
+  /* Enhanced liquid effect styles */
+  .liquid-blob {
+    @apply absolute rounded-full opacity-70 blur-xl;
+    animation: morphBlob 15s ease-in-out infinite;
+  }
+  
+  .product-image-container {
+    @apply relative overflow-hidden rounded-xl;
+    perspective: 1000px;
+  }
+  
+  .product-image {
+    @apply transition-all duration-500;
+    transform-style: preserve-3d;
+  }
+  
+  .product-card:hover .product-image {
+    transform: rotateY(10deg) rotateX(5deg);
+  }
+  
+  /* Liquid drop animation */
+  .liquid-drop {
+    @apply absolute w-2 h-2 rounded-full bg-white opacity-80;
+    animation: dropFall 2s ease-in infinite;
   }
 }
 
@@ -158,11 +189,11 @@
   z-index: -1;
 }
 
-/* Scroll animations */
+/* Enhanced Scroll animations */
 .reveal {
   opacity: 0;
   transform: translateY(30px);
-  transition: all 0.8s ease;
+  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
 }
 
 .reveal.active {
@@ -172,10 +203,54 @@
 
 /* Product card hover effects */
 .product-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
 }
 
 .product-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Enhanced keyframe animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes morphBlob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50% { border-radius: 50% 60% 30% 70% / 40% 30% 70% 60%; }
+  75% { border-radius: 40% 30% 70% 50% / 70% 50% 40% 30%; }
+}
+
+@keyframes dropFall {
+  0% { transform: translateY(-10px); opacity: 0; }
+  10% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(100px); opacity: 0; }
+}
+
+@keyframes liquidWave {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.05) translateY(-10px); }
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .text-gradient {
+    background-size: 200% auto;
+    animation: gradientMove 8s linear infinite;
+  }
+  
+  @keyframes gradientMove {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
 }

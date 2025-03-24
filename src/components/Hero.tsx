@@ -1,42 +1,82 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
 
 const Hero = () => {
   const textRef = useRef<HTMLDivElement>(null);
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       if (!textRef.current) return;
       
       const scroll = window.scrollY;
-      const opacity = 1 - (scroll / 500);
-      const translateY = scroll * 0.3;
-      
-      textRef.current.style.opacity = `${Math.max(0, opacity)}`;
-      textRef.current.style.transform = `translateY(${translateY}px)`;
+      setScrollY(scroll);
     };
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const opacity = Math.max(0, 1 - (scrollY / 500));
+  const translateY = scrollY * 0.3;
+
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
       {/* 3D Background */}
       <div className="absolute inset-0 z-0">
-        <ThreeScene animationType="wave" color="#33C3F0" />
+        <ThreeScene 
+          animationType="wave" 
+          color="#33C3F0" 
+          className="absolute inset-0"
+        />
       </div>
+      
+      {/* Animated Bubbles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(10)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute rounded-full bg-white opacity-20 animate-float"
+            style={{
+              width: `${Math.random() * 80 + 20}px`,
+              height: `${Math.random() * 80 + 20}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDuration: `${Math.random() * 10 + 5}s`,
+              animationDelay: `${Math.random() * 5}s`
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Liquid Overlay Effect */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-omiwo-blue/10"></div>
       
       {/* Content */}
       <div
         ref={textRef}
         className="relative z-10 text-center px-4 transition-all duration-300"
+        style={{
+          opacity,
+          transform: `translateY(${translateY}px)`
+        }}
       >
+        {/* Logo */}
+        <ScrollReveal delay={100}>
+          <div className="flex justify-center mb-8">
+            <img 
+              src="public/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
+              alt="OMIWO Logo" 
+              className="h-24 md:h-32 animate-float"
+            />
+          </div>
+        </ScrollReveal>
+        
         <ScrollReveal delay={200}>
           <h1 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-gradient leading-tight">
-            Elevate Your Clean<br />With OMIWO
+            Elevate Your Clean<br />With Premium Liquids
           </h1>
         </ScrollReveal>
         
@@ -48,8 +88,9 @@ const Hero = () => {
         
         <ScrollReveal delay={600}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="liquid-button">
-              <span className="relative z-10">Explore Collection</span>
+            <button className="liquid-button group">
+              <span className="relative z-10 group-hover:text-white transition-colors">Explore Collection</span>
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500 to-teal-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
             <a 
               href="#products" 

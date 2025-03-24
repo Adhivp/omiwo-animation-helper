@@ -4,12 +4,46 @@ import ScrollReveal from './ScrollReveal';
 
 const AboutSection = () => {
   return (
-    <section id="about" className="section-padding relative bg-omiwo-off-white">
-      <div className="container-padding">
+    <section id="about" className="section-padding relative bg-gradient-to-b from-white to-omiwo-off-white overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(5)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute rounded-full opacity-10"
+            style={{
+              background: i % 2 === 0 ? '#E63946' : i % 3 === 0 ? '#2A9D8F' : '#00B4D8',
+              width: `${Math.random() * 300 + 100}px`,
+              height: `${Math.random() * 300 + 100}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              filter: 'blur(50px)',
+              animation: `float ${Math.random() * 10 + 20}s ease-in-out infinite`
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="container-padding relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* 3D Visual */}
-          <div className="relative h-96 overflow-hidden rounded-2xl">
-            <ThreeScene animationType="flow" color="#33C3F0" className="absolute inset-0" />
+          <div className="relative h-96 overflow-hidden rounded-2xl shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-omiwo-blue/20 to-omiwo-teal/20"></div>
+            <ThreeScene 
+              animationType="pour" 
+              color="#33C3F0" 
+              className="absolute inset-0" 
+            />
+            
+            {/* OMIWO Logo Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-30">
+              <img 
+                src="public/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
+                alt="OMIWO Logo" 
+                className="w-1/2 animate-pulse"
+                style={{ animationDuration: '4s' }}
+              />
+            </div>
           </div>
           
           {/* Content */}
@@ -36,18 +70,18 @@ const AboutSection = () => {
             
             <ScrollReveal delay={600}>
               <div className="flex flex-wrap gap-4">
-                <div className="glass-card px-5 py-3 flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-omiwo-blue mr-3"></div>
+                <div className="glass-card px-5 py-3 flex items-center transform transition-all hover:scale-105 hover:shadow-md">
+                  <div className="w-4 h-4 rounded-full bg-green-500 mr-3"></div>
                   <span className="font-medium">Eco-Friendly</span>
                 </div>
                 
-                <div className="glass-card px-5 py-3 flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-omiwo-teal mr-3"></div>
+                <div className="glass-card px-5 py-3 flex items-center transform transition-all hover:scale-105 hover:shadow-md">
+                  <div className="w-4 h-4 rounded-full bg-cyan-500 mr-3"></div>
                   <span className="font-medium">Premium Quality</span>
                 </div>
                 
-                <div className="glass-card px-5 py-3 flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-omiwo-blue mr-3"></div>
+                <div className="glass-card px-5 py-3 flex items-center transform transition-all hover:scale-105 hover:shadow-md">
+                  <div className="w-4 h-4 rounded-full bg-blue-500 mr-3"></div>
                   <span className="font-medium">Dermatologically Tested</span>
                 </div>
               </div>
