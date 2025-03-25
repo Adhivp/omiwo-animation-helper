@@ -105,8 +105,9 @@ const ProductCard = ({
           <h3 className={`text-2xl font-bold mb-1 ${style.textColor}`}>{name}</h3>
         </div>
         
-        {/* 3D Product Visualization */}
+        {/* 3D Product Visualization with Image */}
         <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100">
+          {/* 3D Liquid Background */}
           <ThreeScene 
             animationType={animationType} 
             color={color} 
@@ -114,18 +115,28 @@ const ProductCard = ({
             className="absolute inset-0"
           />
           
-          {/* Product Image Overlay */}
+          {/* Product Image */}
           {imageSrc && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <img 
-                src={imageSrc} 
-                alt={name} 
-                className="h-44 object-contain transform transition-all duration-500 hover:scale-110"
-                style={{ 
-                  opacity: 0.9,
-                  filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))'
-                }}
-              />
+              <div className="relative product-container">
+                <img 
+                  src={imageSrc} 
+                  alt={name} 
+                  className="h-44 object-contain transform transition-all duration-500 hover:scale-110 product-image"
+                  style={{ 
+                    filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))'
+                  }}
+                />
+                
+                {/* Animated droplets */}
+                {isHovered && (
+                  <>
+                    <span className="droplet" style={{ left: '20%', animationDelay: '0s', background: color }}></span>
+                    <span className="droplet" style={{ left: '50%', animationDelay: '0.3s', background: color }}></span>
+                    <span className="droplet" style={{ left: '80%', animationDelay: '0.7s', background: color }}></span>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

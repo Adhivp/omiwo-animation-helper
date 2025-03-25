@@ -32,19 +32,20 @@ const Index = () => {
       
       for (let i = 0; i < reveals.length; i++) {
         const windowHeight = window.innerHeight;
-        const elementTop = reveals[i].getBoundingClientRect().top;
-        const elementVisible = 150;
+        const revealTop = reveals[i].getBoundingClientRect().top;
+        const revealPoint = 100; // Adjusted to trigger earlier
         
-        if (elementTop < windowHeight - elementVisible) {
+        if (revealTop < windowHeight - revealPoint) {
           reveals[i].classList.add('active');
         }
       }
     };
     
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
+    // Initial check after a short delay to ensure elements are properly positioned
+    setTimeout(handleScroll, 100);
     
-    // Add a class to the body when page is loaded
+    // Add a class to the body when page is loaded for initial animations
     document.body.classList.add('loaded');
     
     return () => {

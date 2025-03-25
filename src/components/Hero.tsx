@@ -24,7 +24,7 @@ const Hero = () => {
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* 3D Background */}
+      {/* Enhanced 3D Background */}
       <div className="absolute inset-0 z-0">
         <ThreeScene 
           animationType="wave" 
@@ -63,13 +63,14 @@ const Hero = () => {
           transform: `translateY(${translateY}px)`
         }}
       >
-        {/* Logo */}
+        {/* OMIWO Logo */}
         <ScrollReveal delay={100}>
           <div className="flex justify-center mb-8">
             <img 
-              src="public/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
+              src="/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
               alt="OMIWO Logo" 
               className="h-24 md:h-32 animate-float"
+              style={{ filter: 'drop-shadow(0 10px 25px rgba(51, 195, 240, 0.5))' }}
             />
           </div>
         </ScrollReveal>
@@ -88,7 +89,7 @@ const Hero = () => {
         
         <ScrollReveal delay={600}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="liquid-button group">
+            <button className="liquid-button group relative overflow-hidden">
               <span className="relative z-10 group-hover:text-white transition-colors">Explore Collection</span>
               <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500 to-teal-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>

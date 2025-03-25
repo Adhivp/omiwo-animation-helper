@@ -11,7 +11,7 @@ const ProductShowcase = () => {
       color: '#E63946', // Red based on the OMIWO toilet cleaner packaging
       animationType: 'flow' as const,
       productType: 'toiletCleaner' as const,
-      imageSrc: 'public/lovable-uploads/928cb3fa-f7c2-4192-8864-11c912a2416e.png'
+      imageSrc: '/lovable-uploads/928cb3fa-f7c2-4192-8864-11c912a2416e.png'
     },
     {
       name: 'Liquid Detergent',
@@ -19,7 +19,7 @@ const ProductShowcase = () => {
       color: '#2A9D8F', // Teal based on the OMIWO detergent packaging
       animationType: 'pour' as const,
       productType: 'detergent' as const,
-      imageSrc: 'public/lovable-uploads/73b669e8-f01e-4699-b751-8f0df0073e73.png'
+      imageSrc: '/lovable-uploads/73b669e8-f01e-4699-b751-8f0df0073e73.png'
     },
     {
       name: 'Advanced Hand Wash',
@@ -27,7 +27,7 @@ const ProductShowcase = () => {
       color: '#00B4D8', // Light blue based on the OMIWO hand wash packaging
       animationType: 'ripple' as const,
       productType: 'handWash' as const,
-      imageSrc: 'public/lovable-uploads/9ab0d91e-0c3e-4715-8d80-703d7a5d560f.png'
+      imageSrc: '/lovable-uploads/9ab0d91e-0c3e-4715-8d80-703d7a5d560f.png'
     }
   ];
 
@@ -52,7 +52,7 @@ const ProductShowcase = () => {
         <ScrollReveal delay={200}>
           <div className="flex justify-center mb-12">
             <img 
-              src="public/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
+              src="/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
               alt="OMIWO Logo" 
               className="h-16 md:h-20"
             />

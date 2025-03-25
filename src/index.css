@@ -162,6 +162,26 @@
     @apply absolute w-2 h-2 rounded-full bg-white opacity-80;
     animation: dropFall 2s ease-in infinite;
   }
+  
+  /* Product container and droplet effects */
+  .product-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .droplet {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    bottom: -5px;
+    opacity: 0;
+    animation: drip 1.5s ease-in infinite;
+  }
 }
 
 .font-inter {
@@ -240,6 +260,21 @@
 @keyframes liquidWave {
   0%, 100% { transform: scale(1) translateY(0); }
   50% { transform: scale(1.05) translateY(-10px); }
+}
+
+/* New drip animation for product images */
+@keyframes drip {
+  0% { 
+    opacity: 0; 
+    transform: translateY(0) scale(1);
+  }
+  10% { 
+    opacity: 0.7; 
+  }
+  100% { 
+    opacity: 0;
+    transform: translateY(100px) scale(0.5);
+  }
 }
 
 /* Media queries for responsiveness */
