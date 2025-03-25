@@ -7,27 +7,27 @@ const ProductShowcase = () => {
   const products = [
     {
       name: 'Premium Toilet Cleaner',
-      description: 'Advanced formula with microbial cleaners for a deep clean and non-abrasive cleaning solutions.',
-      color: '#E63946', // Red based on the OMIWO toilet cleaner packaging
+      description: 'Microbial Cleaners & Non-Abrasive Cleaning Solutions for effective bathroom hygiene.',
+      color: '#1e3a8a', // Dark blue for toilet cleaner
       animationType: 'flow' as const,
       productType: 'toiletCleaner' as const,
-      imageSrc: '/lovable-uploads/928cb3fa-f7c2-4192-8864-11c912a2416e.png'
+      imageSrc: '/lovable-uploads/faec8bf4-7836-4dd2-8b31-2f8b098b4487.png'
     },
     {
       name: 'Liquid Detergent',
       description: 'Color-safe technology with 99.9% germ defense for all your laundry needs.',
-      color: '#2A9D8F', // Teal based on the OMIWO detergent packaging
+      color: '#3b82f6', // Blue for detergent
       animationType: 'pour' as const,
       productType: 'detergent' as const,
-      imageSrc: '/lovable-uploads/73b669e8-f01e-4699-b751-8f0df0073e73.png'
+      imageSrc: '/lovable-uploads/47e3e4c5-435c-4cef-b4a1-128d7def77e5.png'
     },
     {
       name: 'Advanced Hand Wash',
-      description: 'Antimicrobial formulations with long-lasting protection for gentle hand care.',
-      color: '#00B4D8', // Light blue based on the OMIWO hand wash packaging
+      description: 'Antimicrobial Formulations with Long-lasting Protection for gentle hand care.',
+      color: '#06b6d4', // Turquoise for hand wash
       animationType: 'ripple' as const,
       productType: 'handWash' as const,
-      imageSrc: '/lovable-uploads/9ab0d91e-0c3e-4715-8d80-703d7a5d560f.png'
+      imageSrc: '/lovable-uploads/62d1d8d7-af54-4342-91fb-7ea7229741bc.png'
     }
   ];
 
@@ -48,14 +48,10 @@ const ProductShowcase = () => {
           </div>
         </ScrollReveal>
         
-        {/* OMIWO Logo */}
+        {/* OMIWO Text */}
         <ScrollReveal delay={200}>
           <div className="flex justify-center mb-12">
-            <img 
-              src="/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
-              alt="OMIWO Logo" 
-              className="h-16 md:h-20"
-            />
+            <h3 className="text-4xl md:text-6xl font-bold text-gradient">OMIWO</h3>
           </div>
         </ScrollReveal>
         

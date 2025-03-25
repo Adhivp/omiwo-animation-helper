@@ -6,34 +6,54 @@ import ScrollReveal from './ScrollReveal';
 const Hero = () => {
   const textRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!textRef.current) return;
+      setScrollY(window.scrollY);
+    };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      // Calculate mouse position relative to the center of the screen
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
       
-      const scroll = window.scrollY;
-      setScrollY(scroll);
+      setMousePosition({ x, y });
     };
     
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
   const opacity = Math.max(0, 1 - (scrollY / 500));
   const translateY = scrollY * 0.3;
+  
+  // Subtle parallax based on mouse position
+  const parallaxX = mousePosition.x * 20;
+  const parallaxY = mousePosition.y * 20;
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* Enhanced 3D Background */}
-      <div className="absolute inset-0 z-0">
+      {/* Enhanced 3D Background with cursor interaction */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          transform: `translate(${-parallaxX * 0.5}px, ${-parallaxY * 0.5}px)`
+        }}
+      >
         <ThreeScene 
           animationType="wave" 
-          color="#33C3F0" 
+          color="#3b82f6" // Blue color to match product theme
           className="absolute inset-0"
         />
       </div>
       
-      {/* Animated Bubbles */}
+      {/* Animated Bubbles with cursor interaction */}
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(10)].map((_, i) => (
           <div 
@@ -45,40 +65,36 @@ const Hero = () => {
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDuration: `${Math.random() * 10 + 5}s`,
-              animationDelay: `${Math.random() * 5}s`
+              animationDelay: `${Math.random() * 5}s`,
+              transform: `translate(${parallaxX * (0.2 + Math.random() * 0.8)}px, ${parallaxY * (0.2 + Math.random() * 0.8)}px)`
             }}
           />
         ))}
       </div>
       
       {/* Liquid Overlay Effect */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-omiwo-blue/10"></div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-blue-500/10"></div>
       
-      {/* Content */}
+      {/* Content with cursor interaction */}
       <div
         ref={textRef}
         className="relative z-10 text-center px-4 transition-all duration-300"
         style={{
           opacity,
-          transform: `translateY(${translateY}px)`
+          transform: `translate(${parallaxX * 0.2}px, ${translateY + parallaxY * 0.2}px)`
         }}
       >
-        {/* OMIWO Logo */}
+        {/* OMIWO Text */}
         <ScrollReveal delay={100}>
           <div className="flex justify-center mb-8">
-            <img 
-              src="/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
-              alt="OMIWO Logo" 
-              className="h-24 md:h-32 animate-float"
-              style={{ filter: 'drop-shadow(0 10px 25px rgba(51, 195, 240, 0.5))' }}
-            />
+            <h1 className="text-6xl md:text-8xl font-bold text-gradient animate-float">OMIWO</h1>
           </div>
         </ScrollReveal>
         
         <ScrollReveal delay={200}>
-          <h1 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-gradient leading-tight">
+          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-gradient leading-tight">
             Elevate Your Clean<br />With Premium Liquids
-          </h1>
+          </h2>
         </ScrollReveal>
         
         <ScrollReveal delay={400}>
@@ -91,11 +107,11 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button className="liquid-button group relative overflow-hidden">
               <span className="relative z-10 group-hover:text-white transition-colors">Explore Collection</span>
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500 to-teal-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
             <a 
               href="#products" 
-              className="inline-flex items-center text-foreground font-medium hover:text-omiwo-blue transition-colors"
+              className="inline-flex items-center text-foreground font-medium hover:text-blue-500 transition-colors"
             >
               <span>Learn More</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

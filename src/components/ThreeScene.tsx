@@ -28,9 +28,9 @@ const ThreeScene = ({
 
   // Get product-specific color
   const getProductColor = (): string => {
-    if (productType === 'toiletCleaner') return '#E63946'; // Red for toilet cleaner
-    if (productType === 'detergent') return '#2A9D8F'; // Teal for detergent
-    if (productType === 'handWash') return '#00B4D8'; // Light blue for hand wash
+    if (productType === 'toiletCleaner') return '#1e3a8a'; // Dark blue for toilet cleaner
+    if (productType === 'detergent') return '#3b82f6'; // Blue for detergent
+    if (productType === 'handWash') return '#06b6d4'; // Turquoise for hand wash (matches image)
     return color; // Default color
   };
 
@@ -61,7 +61,8 @@ const ThreeScene = ({
     });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    // Fix: Replace outputEncoding and sRGBEncoding with modern equivalents
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     containerRef.current.appendChild(renderer.domElement);
@@ -137,10 +138,40 @@ const ThreeScene = ({
       const time = performance.now() * 0.001;
       timeRef.current = time;
       
-      // Mouse interaction effect - smooth transitions
+      // Enhanced cursor interaction effect - more responsive
       if (isHovered && meshRef.current) {
-        meshRef.current.rotation.x += (mousePosition.y * 0.01 - meshRef.current.rotation.x) * 0.1;
-        meshRef.current.rotation.y += (mousePosition.x * 0.01 - meshRef.current.rotation.y) * 0.1;
+        // More direct and responsive cursor control
+        meshRef.current.rotation.x += (mousePosition.y * 0.05 - meshRef.current.rotation.x) * 0.1;
+        meshRef.current.rotation.y += (mousePosition.x * 0.05 - meshRef.current.rotation.y) * 0.1;
+        
+        // Add some displacement based on cursor position
+        if (meshRef.current.geometry.attributes.position) {
+          const positions = meshRef.current.geometry.attributes.position;
+          const initialPositions = initialGeometryRef.current?.attributes.position;
+          
+          if (positions && initialPositions && positions.count === initialPositions.count) {
+            for (let i = 0; i < positions.count; i++) {
+              const vertex = new THREE.Vector3();
+              vertex.fromBufferAttribute(initialPositions, i);
+              
+              // Add cursor-based distortion
+              const distanceX = Math.abs(vertex.x - mousePosition.x * 0.5);
+              const distanceY = Math.abs(vertex.y - mousePosition.y * 0.5);
+              const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+              
+              // Create a ripple effect centered around cursor position
+              const displacement = Math.max(0, 0.2 - distance) * 0.3;
+              
+              vertex.x += vertex.x * displacement;
+              vertex.y += vertex.y * displacement;
+              vertex.z += vertex.z * displacement;
+              
+              positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
+            }
+            
+            positions.needsUpdate = true;
+          }
+        }
       } else {
         // Gentle rotation when not hovered
         meshRef.current.rotation.y += 0.002;
@@ -279,11 +310,12 @@ const ThreeScene = ({
     // Start animation
     requestRef.current = requestAnimationFrame(animate);
     
-    // Handle mouse interactions
+    // Enhanced mouse interactions - more responsive
     const handleMouseMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
       
       const rect = containerRef.current.getBoundingClientRect();
+      // Normalize coordinates for more intuitive control
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       
@@ -291,10 +323,15 @@ const ThreeScene = ({
     };
     
     const handleMouseEnter = () => setIsHovered(true);
-    const handleMouseLeave = () => setIsHovered(false);
+    const handleMouseLeave = () => {
+      setIsHovered(false);
+      setMousePosition({ x: 0, y: 0 }); // Reset position when mouse leaves
+    };
+    
+    // Add document-level mouse tracking for a more fluid experience
+    document.addEventListener('mousemove', handleMouseMove);
     
     if (containerRef.current) {
-      containerRef.current.addEventListener('mousemove', handleMouseMove);
       containerRef.current.addEventListener('mouseenter', handleMouseEnter);
       containerRef.current.addEventListener('mouseleave', handleMouseLeave);
     }
@@ -321,9 +358,9 @@ const ThreeScene = ({
       }
       
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('mousemove', handleMouseMove);
       
       if (containerRef.current) {
-        containerRef.current.removeEventListener('mousemove', handleMouseMove);
         containerRef.current.removeEventListener('mouseenter', handleMouseEnter);
         containerRef.current.removeEventListener('mouseleave', handleMouseLeave);
       }

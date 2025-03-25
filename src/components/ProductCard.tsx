@@ -25,37 +25,43 @@ const ProductCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // 3D tilt effect on hover
+  // Enhanced 3D tilt effect on hover with mouse tracking
   useEffect(() => {
     const card = cardRef.current;
     if (!card) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isHovered || !card) return;
+      if (!card) return;
       
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
+      setMousePos({ x, y });
       
-      const rotateX = (y - centerY) / 20;
-      const rotateY = (centerX - x) / 20;
-      
-      setRotation({ x: rotateX, y: rotateY });
+      if (isHovered) {
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        // More pronounced tilt effect
+        const rotateX = (y - centerY) / 15;
+        const rotateY = (centerX - x) / 15;
+        
+        setRotation({ x: rotateX, y: rotateY });
+      }
     };
     
     const handleMouseLeave = () => {
       setRotation({ x: 0, y: 0 });
     };
     
-    card.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove);
     card.addEventListener('mouseleave', handleMouseLeave);
     
     return () => {
-      card.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleMouseMove);
       card.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, [isHovered]);
@@ -64,17 +70,19 @@ const ProductCard = ({
   const getProductStyle = () => {
     if (productType === 'toiletCleaner') {
       return {
-        bgColor: 'bg-red-50',
-        textColor: 'text-red-900',
-        borderColor: 'border-red-200',
-        buttonBg: 'bg-gradient-to-r from-red-500 to-red-700',
+        bgColor: 'bg-indigo-50',
+        textColor: 'text-indigo-900',
+        borderColor: 'border-indigo-200',
+        buttonBg: 'bg-gradient-to-r from-indigo-500 to-indigo-700',
+        accent: 'text-red-600', // Red OMIWO text for toilet cleaner
       };
     } else if (productType === 'detergent') {
       return {
-        bgColor: 'bg-teal-50',
-        textColor: 'text-teal-900',
-        borderColor: 'border-teal-200',
-        buttonBg: 'bg-gradient-to-r from-teal-500 to-teal-700',
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-900',
+        borderColor: 'border-blue-200',
+        buttonBg: 'bg-gradient-to-r from-blue-500 to-blue-700',
+        accent: 'text-emerald-500', // Green OMIWO text for detergent
       };
     } else { // handWash
       return {
@@ -82,6 +90,7 @@ const ProductCard = ({
         textColor: 'text-cyan-900',
         borderColor: 'border-cyan-200',
         buttonBg: 'bg-gradient-to-r from-cyan-500 to-cyan-700',
+        accent: 'text-orange-500', // Orange OMIWO text for hand wash
       };
     }
   };
@@ -97,12 +106,13 @@ const ProductCard = ({
         onMouseLeave={() => setIsHovered(false)}
         style={{
           transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(${isHovered ? 1.02 : 1}, ${isHovered ? 1.02 : 1}, 1)`,
-          transition: 'transform 0.3s ease'
+          transition: 'transform 0.2s ease'
         }}
       >
         {/* Product Header */}
         <div className={`px-6 py-4 ${style.bgColor}`}>
           <h3 className={`text-2xl font-bold mb-1 ${style.textColor}`}>{name}</h3>
+          <span className={`text-sm font-bold ${style.accent}`}>OMIWO</span>
         </div>
         
         {/* 3D Product Visualization with Image */}
@@ -128,12 +138,33 @@ const ProductCard = ({
                   }}
                 />
                 
-                {/* Animated droplets */}
+                {/* Animated droplets - position based on mouse position */}
                 {isHovered && (
                   <>
-                    <span className="droplet" style={{ left: '20%', animationDelay: '0s', background: color }}></span>
-                    <span className="droplet" style={{ left: '50%', animationDelay: '0.3s', background: color }}></span>
-                    <span className="droplet" style={{ left: '80%', animationDelay: '0.7s', background: color }}></span>
+                    <span 
+                      className="droplet" 
+                      style={{ 
+                        left: `${mousePos.x / 4}%`, 
+                        animationDelay: '0s', 
+                        background: color 
+                      }}
+                    ></span>
+                    <span 
+                      className="droplet" 
+                      style={{ 
+                        left: `${50 + mousePos.x / 8}%`, 
+                        animationDelay: '0.3s', 
+                        background: color 
+                      }}
+                    ></span>
+                    <span 
+                      className="droplet" 
+                      style={{ 
+                        left: `${80 - mousePos.x / 10}%`, 
+                        animationDelay: '0.7s', 
+                        background: color 
+                      }}
+                    ></span>
                   </>
                 )}
               </div>
@@ -149,14 +180,14 @@ const ProductCard = ({
           <div className="flex flex-wrap gap-2 mb-6">
             {productType === 'toiletCleaner' && (
               <>
-                <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Anti-bacterial</span>
-                <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Non-abrasive</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Microbial Cleaners</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Non-abrasive</span>
               </>
             )}
             {productType === 'detergent' && (
               <>
-                <span className="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-800">Color-safe</span>
-                <span className="px-2 py-1 text-xs rounded-full bg-teal-100 text-teal-800">99.9% germ defense</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Color-safe</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">99.9% germ defense</span>
               </>
             )}
             {productType === 'handWash' && (
