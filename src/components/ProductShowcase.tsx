@@ -11,7 +11,7 @@ const ProductShowcase = () => {
       color: '#1e3a8a', // Dark blue for toilet cleaner
       animationType: 'flow' as const,
       productType: 'toiletCleaner' as const,
-      imageSrc: '/lovable-uploads/faec8bf4-7836-4dd2-8b31-2f8b098b4487.png'
+      imageSrc: '/lovable-uploads/0b003781-ade8-4b60-bb2f-d659dba0b5df.png'
     },
     {
       name: 'Liquid Detergent',
@@ -19,7 +19,7 @@ const ProductShowcase = () => {
       color: '#3b82f6', // Blue for detergent
       animationType: 'pour' as const,
       productType: 'detergent' as const,
-      imageSrc: '/lovable-uploads/47e3e4c5-435c-4cef-b4a1-128d7def77e5.png'
+      imageSrc: '/lovable-uploads/36d74862-7337-4fbb-910a-4278c0831ed8.png'
     },
     {
       name: 'Advanced Hand Wash',
@@ -27,7 +27,7 @@ const ProductShowcase = () => {
       color: '#06b6d4', // Turquoise for hand wash
       animationType: 'ripple' as const,
       productType: 'handWash' as const,
-      imageSrc: '/lovable-uploads/62d1d8d7-af54-4342-91fb-7ea7229741bc.png'
+      imageSrc: '/lovable-uploads/67497743-70f1-458a-9924-39c1c7397a0e.png'
     }
   ];
 
@@ -51,7 +51,13 @@ const ProductShowcase = () => {
         {/* OMIWO Text */}
         <ScrollReveal delay={200}>
           <div className="flex justify-center mb-12">
-            <h3 className="text-4xl md:text-6xl font-bold text-gradient">OMIWO</h3>
+            <h3 className="text-4xl md:text-6xl font-bold">
+              <span className="text-red-600">O</span>
+              <span className="text-red-600">M</span>
+              <span className="text-red-600">I</span>
+              <span className="text-red-600">W</span>
+              <span className="text-red-600">O</span>
+            </h3>
           </div>
         </ScrollReveal>
         

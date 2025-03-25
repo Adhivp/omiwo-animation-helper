@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
 
 interface ProductCardProps {
   name: string;
@@ -46,8 +47,8 @@ const ProductCard = ({
         const centerY = rect.height / 2;
         
         // More pronounced tilt effect
-        const rotateX = (y - centerY) / 15;
-        const rotateY = (centerX - x) / 15;
+        const rotateX = (y - centerY) / 12;
+        const rotateY = (centerX - x) / 12;
         
         setRotation({ x: rotateX, y: rotateY });
       }
@@ -75,6 +76,7 @@ const ProductCard = ({
         borderColor: 'border-indigo-200',
         buttonBg: 'bg-gradient-to-r from-indigo-500 to-indigo-700',
         accent: 'text-red-600', // Red OMIWO text for toilet cleaner
+        hoverAccent: 'group-hover:bg-red-600',
       };
     } else if (productType === 'detergent') {
       return {
@@ -83,6 +85,7 @@ const ProductCard = ({
         borderColor: 'border-blue-200',
         buttonBg: 'bg-gradient-to-r from-blue-500 to-blue-700',
         accent: 'text-emerald-500', // Green OMIWO text for detergent
+        hoverAccent: 'group-hover:bg-emerald-500',
       };
     } else { // handWash
       return {
@@ -91,6 +94,7 @@ const ProductCard = ({
         borderColor: 'border-cyan-200',
         buttonBg: 'bg-gradient-to-r from-cyan-500 to-cyan-700',
         accent: 'text-orange-500', // Orange OMIWO text for hand wash
+        hoverAccent: 'group-hover:bg-orange-500',
       };
     }
   };
@@ -101,18 +105,26 @@ const ProductCard = ({
     <ScrollReveal delay={delay} className="flex-1 min-w-[300px]">
       <div 
         ref={cardRef}
-        className={`product-card h-full rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${style.borderColor}`}
+        className={`product-card h-full rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${style.borderColor} group`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
-          transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(${isHovered ? 1.02 : 1}, ${isHovered ? 1.02 : 1}, 1)`,
+          transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(${isHovered ? 1.03 : 1}, ${isHovered ? 1.03 : 1}, 1)`,
           transition: 'transform 0.2s ease'
         }}
       >
         {/* Product Header */}
-        <div className={`px-6 py-4 ${style.bgColor}`}>
+        <div className={`px-6 py-4 ${style.bgColor} transition-colors duration-300`}>
           <h3 className={`text-2xl font-bold mb-1 ${style.textColor}`}>{name}</h3>
-          <span className={`text-sm font-bold ${style.accent}`}>OMIWO</span>
+          <div className="flex items-center">
+            <span className={`text-sm font-bold ${style.accent} transition-colors duration-300`}>
+              <span className="text-red-600">O</span>
+              <span className="text-red-600">M</span>
+              <span className="text-red-600">I</span>
+              <span className="text-red-600">W</span>
+              <span className="text-red-600">O</span>
+            </span>
+          </div>
         </div>
         
         {/* 3D Product Visualization with Image */}
@@ -122,53 +134,64 @@ const ProductCard = ({
             animationType={animationType} 
             color={color} 
             productType={productType}
+            isHovered={isHovered}
+            mousePosition={mousePos}
             className="absolute inset-0"
           />
           
           {/* Product Image */}
           {imageSrc && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative product-container">
-                <img 
-                  src={imageSrc} 
-                  alt={name} 
-                  className="h-44 object-contain transform transition-all duration-500 hover:scale-110 product-image"
-                  style={{ 
-                    filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))'
-                  }}
-                />
-                
-                {/* Animated droplets - position based on mouse position */}
-                {isHovered && (
-                  <>
-                    <span 
-                      className="droplet" 
-                      style={{ 
-                        left: `${mousePos.x / 4}%`, 
-                        animationDelay: '0s', 
-                        background: color 
-                      }}
-                    ></span>
-                    <span 
-                      className="droplet" 
-                      style={{ 
-                        left: `${50 + mousePos.x / 8}%`, 
-                        animationDelay: '0.3s', 
-                        background: color 
-                      }}
-                    ></span>
-                    <span 
-                      className="droplet" 
-                      style={{ 
-                        left: `${80 - mousePos.x / 10}%`, 
-                        animationDelay: '0.7s', 
-                        background: color 
-                      }}
-                    ></span>
-                  </>
-                )}
-              </div>
-            </div>
+            <HoverCard>
+              <HoverCardTrigger className="h-full w-full flex items-center justify-center">
+                <div className="relative product-container">
+                  <img 
+                    src={imageSrc} 
+                    alt={name} 
+                    className="h-44 object-contain transform transition-all duration-500 hover:scale-110 product-image"
+                    style={{ 
+                      filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))',
+                      transform: isHovered ? `scale(1.1) translateX(${(mousePos.x - 150) / 20}px) translateY(${(mousePos.y - 150) / 20}px)` : 'scale(1)'
+                    }}
+                  />
+                  
+                  {/* Animated droplets - position based on mouse position */}
+                  {isHovered && (
+                    <>
+                      <span 
+                        className="droplet" 
+                        style={{ 
+                          left: `${mousePos.x / 4}%`, 
+                          animationDelay: '0s', 
+                          background: color 
+                        }}
+                      ></span>
+                      <span 
+                        className="droplet" 
+                        style={{ 
+                          left: `${50 + mousePos.x / 8}%`, 
+                          animationDelay: '0.3s', 
+                          background: color 
+                        }}
+                      ></span>
+                      <span 
+                        className="droplet" 
+                        style={{ 
+                          left: `${80 - mousePos.x / 10}%`, 
+                          animationDelay: '0.7s', 
+                          background: color 
+                        }}
+                      ></span>
+                    </>
+                  )}
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent className="p-4">
+                <div className="space-y-2">
+                  <h4 className="font-bold">{name}</h4>
+                  <p className="text-sm">{description}</p>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           )}
         </div>
         
