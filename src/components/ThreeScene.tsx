@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 
@@ -219,17 +220,23 @@ const ThreeScene = ({
     // Apply distortion based on mouse position - enhanced effect
     for (let i = 0; i < positions.count; i++) {
       const vertex = new THREE.Vector3();
-      vertex.fromBufferAttribute(initialPositions, i);
       
-      // Calculate influence based on normalized mouse position
-      const mouseInfluenceX = mousePos.x * 0.03; // Increased from 0.01 to 0.03
-      const mouseInfluenceY = mousePos.y * 0.03; // Increased from 0.01 to 0.03
+      // Type safety: Only get vertex if we can ensure it's a THREE.BufferAttribute
+      if (initialPositions instanceof THREE.BufferAttribute) {
+        vertex.fromBufferAttribute(initialPositions, i);
       
-      // Apply distortion
-      vertex.x += vertex.x * mouseInfluenceX;
-      vertex.y += vertex.y * mouseInfluenceY;
-      
-      positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        // Calculate influence based on normalized mouse position
+        const mouseInfluenceX = mousePos.x * 0.03; // Increased from 0.01 to 0.03
+        const mouseInfluenceY = mousePos.y * 0.03; // Increased from 0.01 to 0.03
+        
+        // Apply distortion
+        vertex.x += vertex.x * mouseInfluenceX;
+        vertex.y += vertex.y * mouseInfluenceY;
+        
+        if (positions instanceof THREE.BufferAttribute) {
+          positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        }
+      }
     }
     
     positions.needsUpdate = true;
@@ -247,19 +254,22 @@ const ThreeScene = ({
     // Mouse influence factor
     const mouseInfluence = Math.sqrt(mousePos.x * mousePos.x + mousePos.y * mousePos.y) * 0.5;
     
-    switch (animationType) {
-      case 'wave':
-        applyWaveAnimation(time, positions, initialPositions, mouseInfluence);
-        break;
-      case 'ripple':
-        applyRippleAnimation(time, positions, initialPositions, mouseInfluence);
-        break;
-      case 'pour':
-        applyPourAnimation(time, positions, initialPositions, mouseInfluence);
-        break;
-      case 'flow':
-        applyFlowAnimation(time, positions, initialPositions, mouseInfluence);
-        break;
+    // Make sure both attributes are BufferAttribute instances
+    if (positions instanceof THREE.BufferAttribute && initialPositions instanceof THREE.BufferAttribute) {
+      switch (animationType) {
+        case 'wave':
+          applyWaveAnimation(time, positions, initialPositions, mouseInfluence);
+          break;
+        case 'ripple':
+          applyRippleAnimation(time, positions, initialPositions, mouseInfluence);
+          break;
+        case 'pour':
+          applyPourAnimation(time, positions, initialPositions, mouseInfluence);
+          break;
+        case 'flow':
+          applyFlowAnimation(time, positions, initialPositions, mouseInfluence);
+          break;
+      }
     }
   }
 
