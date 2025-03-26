@@ -33,27 +33,28 @@ const Hero = () => {
   const opacity = Math.max(0, 1 - (scrollY / 500));
   const translateY = scrollY * 0.3;
   
-  // Subtle parallax based on mouse position
-  const parallaxX = mousePosition.x * 20;
-  const parallaxY = mousePosition.y * 20;
+  // Enhanced parallax based on mouse position
+  const parallaxX = mousePosition.x * 30; // Increased from 20 to 30
+  const parallaxY = mousePosition.y * 30; // Increased from 20 to 30
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* Enhanced 3D Background with cursor interaction */}
+      {/* Enhanced 3D Background with stronger cursor interaction */}
       <div 
         className="absolute inset-0 z-0"
         style={{
-          transform: `translate(${-parallaxX * 0.5}px, ${-parallaxY * 0.5}px)`
+          transform: `translate(${-parallaxX}px, ${-parallaxY}px)`
         }}
       >
         <ThreeScene 
           animationType="wave" 
-          color="#3b82f6" // Blue color to match product theme
+          color="#3b82f6"
+          mousePosition={mousePosition}
           className="absolute inset-0"
         />
       </div>
       
-      {/* Animated Bubbles with cursor interaction */}
+      {/* Animated Bubbles with enhanced cursor interaction */}
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(10)].map((_, i) => (
           <div 
@@ -66,52 +67,45 @@ const Hero = () => {
               top: `${Math.random() * 100}%`,
               animationDuration: `${Math.random() * 10 + 5}s`,
               animationDelay: `${Math.random() * 5}s`,
-              transform: `translate(${parallaxX * (0.2 + Math.random() * 0.8)}px, ${parallaxY * (0.2 + Math.random() * 0.8)}px)`
+              transform: `translate(${parallaxX * (0.3 + Math.random() * 0.8)}px, ${parallaxY * (0.3 + Math.random() * 0.8)}px)`
             }}
           />
         ))}
       </div>
       
-      {/* Liquid Overlay Effect */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-blue-500/10"></div>
+      {/* Darker Overlay to improve text visibility */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-blue-900/30"></div>
       
-      {/* Content with cursor interaction */}
+      {/* Content with enhanced text visibility */}
       <div
         ref={textRef}
         className="relative z-10 text-center px-4 transition-all duration-300"
         style={{
           opacity,
-          transform: `translate(${parallaxX * 0.2}px, ${translateY + parallaxY * 0.2}px)`
+          transform: `translate(${parallaxX * 0.1}px, ${translateY + parallaxY * 0.1}px)`
         }}
       >
-        {/* OMIWO Text */}
-        <ScrollReveal delay={100}>
-          <div className="flex justify-center mb-8">
-            <h1 className="text-6xl md:text-8xl font-bold text-gradient animate-float">OMIWO</h1>
-          </div>
-        </ScrollReveal>
-        
         <ScrollReveal delay={200}>
-          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-gradient leading-tight">
+          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
             Elevate Your Clean<br />With Premium Liquids
           </h2>
         </ScrollReveal>
         
         <ScrollReveal delay={400}>
-          <p className="text-base md:text-xl text-foreground/80 max-w-2xl mx-auto mb-8 md:mb-12">
+          <p className="text-base md:text-xl text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
             Premium quality liquid cleaning products designed to transform your cleaning experience with elegance and effectiveness.
           </p>
         </ScrollReveal>
         
         <ScrollReveal delay={600}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="liquid-button group relative overflow-hidden">
-              <span className="relative z-10 group-hover:text-white transition-colors">Explore Collection</span>
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <button className="liquid-button group relative overflow-hidden bg-blue-600 hover:bg-blue-700">
+              <span className="relative z-10 text-white transition-colors">Explore Collection</span>
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
             <a 
               href="#products" 
-              className="inline-flex items-center text-foreground font-medium hover:text-blue-500 transition-colors"
+              className="inline-flex items-center text-white font-medium hover:text-blue-300 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
             >
               <span>Learn More</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -124,7 +118,7 @@ const Hero = () => {
       
       {/* Scroll Indicator */}
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
       </div>

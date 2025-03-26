@@ -48,19 +48,6 @@ const ProductShowcase = () => {
           </div>
         </ScrollReveal>
         
-        {/* OMIWO Text */}
-        <ScrollReveal delay={200}>
-          <div className="flex justify-center mb-12">
-            <h3 className="text-4xl md:text-6xl font-bold">
-              <span className="text-red-600">O</span>
-              <span className="text-red-600">M</span>
-              <span className="text-red-600">I</span>
-              <span className="text-red-600">W</span>
-              <span className="text-red-600">O</span>
-            </h3>
-          </div>
-        </ScrollReveal>
-        
         {/* Product Cards */}
         <div className="flex flex-col md:flex-row gap-8 mt-12">
           {products.map((product, index) => (

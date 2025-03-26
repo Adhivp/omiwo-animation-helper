@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 
@@ -133,15 +132,15 @@ const ThreeScene = ({
     scene.add(mesh);
     meshRef.current = mesh;
 
-    // Optimized animation function
+    // Optimized animation function with enhanced mouse responsiveness
     const animate = () => {
       if (!meshRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
       
       const time = performance.now() * 0.001;
       timeRef.current = time;
       
-      // Update based on animations
-      updateAnimation(time);
+      // Update based on animations and mouse position
+      updateAnimation(time, mousePosition);
       
       // Render the scene
       rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -188,33 +187,27 @@ const ThreeScene = ({
     };
   }, [animationType, color, productColor, productType]);
 
-  // Function to update animation based on mouse position and hover state
-  function updateAnimation(time: number) {
+  // Updated function to handle animation with mouse position
+  function updateAnimation(time: number, mousePos: {x: number, y: number} = {x: 0, y: 0}) {
     if (!meshRef.current) return;
 
-    // Apply rotation and mouse influence to the mesh
-    if (isHovered && mousePosition) {
-      // Direct cursor influence - more responsive rotation
-      const targetRotationX = (mousePosition.y * 0.01);
-      const targetRotationY = (-mousePosition.x * 0.01);
-      
-      // Smooth rotation towards mouse position
-      meshRef.current.rotation.x += (targetRotationX - meshRef.current.rotation.x) * 0.1;
-      meshRef.current.rotation.y += (targetRotationY - meshRef.current.rotation.y) * 0.1;
-      
-      // Apply cursor-influenced distortion
-      applyMouseDistortion(mousePosition);
-    } else {
-      // Gentle default rotation when not hovered
-      meshRef.current.rotation.y = Math.sin(time * 0.5) * 0.2;
-      meshRef.current.rotation.x = Math.cos(time * 0.4) * 0.1;
-    }
+    // Apply rotation based on mouse position - more responsive
+    // Direct cursor influence - more responsive rotation
+    const targetRotationX = (mousePos.y * 0.2);
+    const targetRotationY = (-mousePos.x * 0.2);
+    
+    // Smooth rotation towards mouse position
+    meshRef.current.rotation.x += (targetRotationX - meshRef.current.rotation.x) * 0.05;
+    meshRef.current.rotation.y += (targetRotationY - meshRef.current.rotation.y) * 0.05;
+    
+    // Apply cursor-influenced distortion
+    applyMouseDistortion(mousePos);
     
     // Apply animation based on type
-    applyTypedAnimation(time);
+    applyTypedAnimation(time, mousePos);
   }
 
-  // Function to apply mouse-based distortion to the mesh vertices
+  // Enhanced function to apply mouse-based distortion to the mesh vertices
   function applyMouseDistortion(mousePos: {x: number, y: number}) {
     if (!meshRef.current || !initialGeometryRef.current) return;
     
@@ -223,14 +216,14 @@ const ThreeScene = ({
     
     if (!positions || !initialPositions || positions.count !== initialPositions.count) return;
     
-    // Apply distortion based on mouse position
+    // Apply distortion based on mouse position - enhanced effect
     for (let i = 0; i < positions.count; i++) {
       const vertex = new THREE.Vector3();
       vertex.fromBufferAttribute(initialPositions, i);
       
-      // Calculate influence based on distance from normalized mouse position
-      const mouseInfluenceX = mousePos.x * 0.01;
-      const mouseInfluenceY = mousePos.y * 0.01;
+      // Calculate influence based on normalized mouse position
+      const mouseInfluenceX = mousePos.x * 0.03; // Increased from 0.01 to 0.03
+      const mouseInfluenceY = mousePos.y * 0.03; // Increased from 0.01 to 0.03
       
       // Apply distortion
       vertex.x += vertex.x * mouseInfluenceX;
@@ -242,8 +235,8 @@ const ThreeScene = ({
     positions.needsUpdate = true;
   }
 
-  // Function to apply animation based on animation type
-  function applyTypedAnimation(time: number) {
+  // Function to apply animation based on animation type, now with mouse influence
+  function applyTypedAnimation(time: number, mousePos: {x: number, y: number} = {x: 0, y: 0}) {
     if (!meshRef.current || !initialGeometryRef.current) return;
     
     const positions = meshRef.current.geometry.attributes.position;
@@ -251,32 +244,38 @@ const ThreeScene = ({
     
     if (!positions || !initialPositions || positions.count !== initialPositions.count) return;
     
+    // Mouse influence factor
+    const mouseInfluence = Math.sqrt(mousePos.x * mousePos.x + mousePos.y * mousePos.y) * 0.5;
+    
     switch (animationType) {
       case 'wave':
-        applyWaveAnimation(time, positions, initialPositions);
+        applyWaveAnimation(time, positions, initialPositions, mouseInfluence);
         break;
       case 'ripple':
-        applyRippleAnimation(time, positions, initialPositions);
+        applyRippleAnimation(time, positions, initialPositions, mouseInfluence);
         break;
       case 'pour':
-        applyPourAnimation(time, positions, initialPositions);
+        applyPourAnimation(time, positions, initialPositions, mouseInfluence);
         break;
       case 'flow':
-        applyFlowAnimation(time, positions, initialPositions);
+        applyFlowAnimation(time, positions, initialPositions, mouseInfluence);
         break;
     }
   }
 
-  // Wave animation
-  function applyWaveAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute) {
+  // Wave animation with mouse influence
+  function applyWaveAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute, mouseInfluence: number = 0) {
     for (let i = 0; i < positions.count; i++) {
       const vertex = new THREE.Vector3();
       vertex.fromBufferAttribute(initialPositions, i);
       
-      // More complex wave pattern
-      const waveX = 0.08 * Math.sin(vertex.x * 8 + time * 2);
-      const waveY = 0.08 * Math.sin(vertex.y * 8 + time * 2.5);
-      const waveZ = 0.08 * Math.sin(vertex.z * 8 + time * 3);
+      // More complex wave pattern with mouse influence
+      const amplitudeFactor = 0.08 + (mouseInfluence * 0.05);
+      const speedFactor = 2 + (mouseInfluence * 1.5);
+      
+      const waveX = amplitudeFactor * Math.sin(vertex.x * 8 + time * speedFactor);
+      const waveY = amplitudeFactor * Math.sin(vertex.y * 8 + time * (speedFactor + 0.5));
+      const waveZ = amplitudeFactor * Math.sin(vertex.z * 8 + time * (speedFactor + 1));
       
       vertex.x += waveX;
       vertex.y += waveY;
@@ -287,14 +286,14 @@ const ThreeScene = ({
     
     positions.needsUpdate = true;
     
-    // Gentle bobbing motion
+    // Gentle bobbing motion influenced by mouse
     if (meshRef.current) {
-      meshRef.current.position.y = Math.sin(time * 0.5) * 0.05;
+      meshRef.current.position.y = Math.sin(time * 0.5) * 0.05 * (1 + mouseInfluence);
     }
   }
 
   // Ripple animation
-  function applyRippleAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute) {
+  function applyRippleAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute, mouseInfluence: number = 0) {
     for (let i = 0; i < positions.count; i++) {
       const vertex = new THREE.Vector3();
       vertex.fromBufferAttribute(initialPositions, i);
@@ -321,7 +320,7 @@ const ThreeScene = ({
   }
 
   // Pour animation
-  function applyPourAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute) {
+  function applyPourAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute, mouseInfluence: number = 0) {
     for (let i = 0; i < positions.count; i++) {
       const vertex = new THREE.Vector3();
       vertex.fromBufferAttribute(initialPositions, i);
@@ -351,7 +350,7 @@ const ThreeScene = ({
   }
 
   // Flow animation
-  function applyFlowAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute) {
+  function applyFlowAnimation(time: number, positions: THREE.BufferAttribute, initialPositions: THREE.BufferAttribute, mouseInfluence: number = 0) {
     for (let i = 0; i < positions.count; i++) {
       const vertex = new THREE.Vector3();
       vertex.fromBufferAttribute(initialPositions, i);
