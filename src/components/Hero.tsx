@@ -7,6 +7,7 @@ const Hero = () => {
   const textRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [prevMousePosition, setPrevMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,36 +15,57 @@ const Hero = () => {
     };
     
     const handleMouseMove = (e: MouseEvent) => {
-      // Calculate mouse position relative to the center of the screen
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = (e.clientY / window.innerHeight) * 2 - 1;
       
-      setMousePosition({ x, y });
+      setPrevMousePosition(mousePosition);
+      
+      // Use smooth transition for mouse movement with easing
+      setMousePosition(prev => ({
+        x: prev.x + (x - prev.x) * 0.05,  // Reduced easing factor for even smoother motion
+        y: prev.y + (y - prev.y) * 0.05   
+      }));
     };
     
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('mousemove', handleMouseMove);
     
+    // Initial animation
+    const animateInitial = () => {
+      setMousePosition(prev => ({
+        x: prev.x * 0.95,
+        y: prev.y * 0.95
+      }));
+    };
+    
+    const initialAnimationId = setInterval(animateInitial, 16);
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
+      clearInterval(initialAnimationId);
     };
-  }, []);
+  }, [mousePosition]);
 
   const opacity = Math.max(0, 1 - (scrollY / 500));
   const translateY = scrollY * 0.3;
   
-  // Enhanced parallax based on mouse position - increased sensitivity
-  const parallaxX = mousePosition.x * 40; // Increased from 30 to 40
-  const parallaxY = mousePosition.y * 40; // Increased from 30 to 40
+  // Calculate velocity for more natural movement
+  const velocityX = (mousePosition.x - prevMousePosition.x) * 2;
+  const velocityY = (mousePosition.y - prevMousePosition.y) * 2;
+  
+  // Smoother parallax with velocity influence
+  const parallaxX = mousePosition.x * 20 + velocityX * 10; 
+  const parallaxY = mousePosition.y * 20 + velocityY * 10;
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* Enhanced 3D Background with stronger cursor interaction */}
+      {/* Enhanced 3D Background with more natural cursor interaction */}
       <div 
         className="absolute inset-0 z-0"
         style={{
-          transform: `translate(${-parallaxX}px, ${-parallaxY}px)`
+          transform: `translate(${-parallaxX}px, ${-parallaxY}px)`,
+          transition: 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}
       >
         <ThreeScene 
@@ -54,27 +76,8 @@ const Hero = () => {
         />
       </div>
       
-      {/* Animated Bubbles with enhanced cursor interaction */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <div 
-            key={i}
-            className="absolute rounded-full bg-white opacity-20 animate-float"
-            style={{
-              width: `${Math.random() * 100 + 20}px`,
-              height: `${Math.random() * 100 + 20}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 10 + 5}s`,
-              animationDelay: `${Math.random() * 5}s`,
-              transform: `translate(${parallaxX * (0.5 + Math.random() * 1.2)}px, ${parallaxY * (0.5 + Math.random() * 1.2)}px)` // More pronounced movement
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Darker Overlay to improve text visibility */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/20 to-blue-900/40"></div>
+      {/* Darker Overlay with gradient */}
+      <div className="absolute inset-0 z-0 bg-gradient-radial from-transparent via-black/30 to-blue-900/50"></div>
       
       {/* Content with enhanced text visibility */}
       <div
@@ -82,17 +85,17 @@ const Hero = () => {
         className="relative z-10 text-center px-4 transition-all duration-300"
         style={{
           opacity,
-          transform: `translate(${parallaxX * 0.1}px, ${translateY + parallaxY * 0.1}px)`
+          transform: `translate(${parallaxX * 0.02}px, ${translateY + parallaxY * 0.02}px)`
         }}
       >
         <ScrollReveal delay={200}>
-          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white leading-tight drop-shadow-[0_4px_14px_rgba(0,0,0,1)]">
             Elevate Your Clean<br />With Premium Liquids
           </h2>
         </ScrollReveal>
         
         <ScrollReveal delay={400}>
-          <p className="text-base md:text-xl text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          <p className="text-base md:text-xl text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_4px_14px_rgba(0,0,0,1)]">
             Premium quality liquid cleaning products designed to transform your cleaning experience with elegance and effectiveness.
           </p>
         </ScrollReveal>
@@ -105,7 +108,7 @@ const Hero = () => {
             </button>
             <a 
               href="#products" 
-              className="inline-flex items-center text-white font-medium hover:text-blue-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+              className="inline-flex items-center text-white font-medium hover:text-blue-300 transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,1)]"
             >
               <span>Learn More</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -118,7 +121,7 @@ const Hero = () => {
       
       {/* Scroll Indicator */}
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white drop-shadow-[0_4px_14px_rgba(0,0,0,1)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
       </div>
