@@ -33,9 +33,9 @@ const Hero = () => {
   const opacity = Math.max(0, 1 - (scrollY / 500));
   const translateY = scrollY * 0.3;
   
-  // Enhanced parallax based on mouse position
-  const parallaxX = mousePosition.x * 30; // Increased from 20 to 30
-  const parallaxY = mousePosition.y * 30; // Increased from 20 to 30
+  // Enhanced parallax based on mouse position - increased sensitivity
+  const parallaxX = mousePosition.x * 40; // Increased from 30 to 40
+  const parallaxY = mousePosition.y * 40; // Increased from 30 to 40
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
@@ -56,25 +56,25 @@ const Hero = () => {
       
       {/* Animated Bubbles with enhanced cursor interaction */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(10)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div 
             key={i}
             className="absolute rounded-full bg-white opacity-20 animate-float"
             style={{
-              width: `${Math.random() * 80 + 20}px`,
-              height: `${Math.random() * 80 + 20}px`,
+              width: `${Math.random() * 100 + 20}px`,
+              height: `${Math.random() * 100 + 20}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDuration: `${Math.random() * 10 + 5}s`,
               animationDelay: `${Math.random() * 5}s`,
-              transform: `translate(${parallaxX * (0.3 + Math.random() * 0.8)}px, ${parallaxY * (0.3 + Math.random() * 0.8)}px)`
+              transform: `translate(${parallaxX * (0.5 + Math.random() * 1.2)}px, ${parallaxY * (0.5 + Math.random() * 1.2)}px)` // More pronounced movement
             }}
           />
         ))}
       </div>
       
       {/* Darker Overlay to improve text visibility */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-blue-900/30"></div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/20 to-blue-900/40"></div>
       
       {/* Content with enhanced text visibility */}
       <div
@@ -86,26 +86,26 @@ const Hero = () => {
         }}
       >
         <ScrollReveal delay={200}>
-          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             Elevate Your Clean<br />With Premium Liquids
           </h2>
         </ScrollReveal>
         
         <ScrollReveal delay={400}>
-          <p className="text-base md:text-xl text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+          <p className="text-base md:text-xl text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             Premium quality liquid cleaning products designed to transform your cleaning experience with elegance and effectiveness.
           </p>
         </ScrollReveal>
         
         <ScrollReveal delay={600}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="liquid-button group relative overflow-hidden bg-blue-600 hover:bg-blue-700">
-              <span className="relative z-10 text-white transition-colors">Explore Collection</span>
+            <button className="liquid-button group relative overflow-hidden bg-blue-600 hover:bg-blue-700 shadow-lg">
+              <span className="relative z-10 text-white transition-colors font-medium px-6 py-3">Explore Collection</span>
               <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
             <a 
               href="#products" 
-              className="inline-flex items-center text-white font-medium hover:text-blue-300 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+              className="inline-flex items-center text-white font-medium hover:text-blue-300 transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
             >
               <span>Learn More</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -118,7 +118,7 @@ const Hero = () => {
       
       {/* Scroll Indicator */}
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
       </div>
