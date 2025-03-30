@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
@@ -8,7 +7,7 @@ interface ProductCardProps {
   name: string;
   description: string;
   color: string;
-  animationType: 'wave' | 'ripple' | 'flow' | 'pour';
+  animationType: 'wave' | 'ripple' | 'flow' | 'pour' | 'bubble';
   productType: 'toiletCleaner' | 'detergent' | 'handWash';
   imageSrc?: string;
   delay?: number;
@@ -67,7 +66,7 @@ const ProductCard = ({
     };
   }, [isHovered]);
 
-  // Get product-specific styling
+  // Get product-specific styling and image paths
   const getProductStyle = () => {
     if (productType === 'toiletCleaner') {
       return {
@@ -77,6 +76,7 @@ const ProductCard = ({
         buttonBg: 'bg-gradient-to-r from-indigo-500 to-indigo-700',
         accent: 'text-red-600', // Red OMIWO text for toilet cleaner
         hoverAccent: 'group-hover:bg-red-600',
+        productImage: '/lovable-uploads/TC_01-removebg-preview.png' // Verified path
       };
     } else if (productType === 'detergent') {
       return {
@@ -86,15 +86,17 @@ const ProductCard = ({
         buttonBg: 'bg-gradient-to-r from-blue-500 to-blue-700',
         accent: 'text-emerald-500', // Green OMIWO text for detergent
         hoverAccent: 'group-hover:bg-emerald-500',
+        productImage: '/lovable-uploads/LD__01-removebg-preview.png' // Verified path
       };
     } else { // handWash
       return {
-        bgColor: 'bg-cyan-50',
-        textColor: 'text-cyan-900',
-        borderColor: 'border-cyan-200',
-        buttonBg: 'bg-gradient-to-r from-cyan-500 to-cyan-700',
-        accent: 'text-orange-500', // Orange OMIWO text for hand wash
-        hoverAccent: 'group-hover:bg-orange-500',
+        bgColor: 'bg-yellow-50', // Changed from cyan to yellow', // Changed from cyan to yellow
+        textColor: 'text-yellow-900', // Changed from cyan to yellow', // Changed from cyan to yellow
+        borderColor: 'border-yellow-200', // Changed from cyan to yellow', // Changed from cyan to yellow
+        buttonBg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', // Changed gradient00', // Changed gradient
+        accent: 'text-yellow-500', // Kept as yellow
+        hoverAccent: 'group-hover:bg-yellow-500', // Kept as yellow
+        productImage: '/lovable-uploads/HW_-removebg-preview.png' // Verified path
       };
     }
   };
@@ -127,9 +129,9 @@ const ProductCard = ({
           </div>
         </div>
         
-        {/* 3D Product Visualization with Image */}
+        {/* Product Visualization with Animated Background and Product Image */}
         <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100">
-          {/* 3D Liquid Background */}
+          {/* Animated Liquid Background - Keep existing 3D animation */}
           <ThreeScene 
             animationType={animationType} 
             color={color} 
@@ -139,60 +141,66 @@ const ProductCard = ({
             className="absolute inset-0"
           />
           
-          {/* Product Image */}
-          {imageSrc && (
-            <HoverCard>
-              <HoverCardTrigger className="h-full w-full flex items-center justify-center">
-                <div className="relative product-container">
-                  <img 
-                    src={imageSrc} 
-                    alt={name} 
-                    className="h-44 object-contain transform transition-all duration-500 hover:scale-110 product-image"
-                    style={{ 
-                      filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))',
-                      transform: isHovered ? `scale(1.1) translateX(${(mousePos.x - 150) / 20}px) translateY(${(mousePos.y - 150) / 20}px)` : 'scale(1)'
-                    }}
-                  />
-                  
-                  {/* Animated droplets - position based on mouse position */}
-                  {isHovered && (
-                    <>
-                      <span 
-                        className="droplet" 
-                        style={{ 
-                          left: `${mousePos.x / 4}%`, 
-                          animationDelay: '0s', 
-                          background: color 
-                        }}
-                      ></span>
-                      <span 
-                        className="droplet" 
-                        style={{ 
-                          left: `${50 + mousePos.x / 8}%`, 
-                          animationDelay: '0.3s', 
-                          background: color 
-                        }}
-                      ></span>
-                      <span 
-                        className="droplet" 
-                        style={{ 
-                          left: `${80 - mousePos.x / 10}%`, 
-                          animationDelay: '0.7s', 
-                          background: color 
-                        }}
-                      ></span>
-                    </>
-                  )}
-                </div>
-              </HoverCardTrigger>
-              <HoverCardContent className="p-4">
-                <div className="space-y-2">
-                  <h4 className="font-bold">{name}</h4>
-                  <p className="text-sm">{description}</p>
-                </div>
-              </HoverCardContent>
-            </HoverCard>
-          )}
+          {/* Product Image Overlay - Fix visibility issues */}
+          <HoverCard>
+            <HoverCardTrigger className="h-full w-full flex items-center justify-center">
+              <div className="relative product-container w-full h-full flex items-center justify-center">
+                {/* Background-removed product image overlay with improved visibility */}
+                <img 
+                  src={style.productImage}
+                  alt={name} 
+                  className="h-52 w-auto max-w-[80%] object-contain transform transition-all duration-500 relative z-10"
+                  style={{ 
+                    filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))',
+                    transform: isHovered ? `scale(1.08) translateX(${(mousePos.x - 150) / 25}px) translateY(${(mousePos.y - 150) / 25}px)` : 'scale(1)',
+                    transitionTimingFunction: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+                    // Ensure image is visible
+                    opacity: 1,
+                    position: 'relative'
+                  }}
+                />
+                
+                {/* Animated droplets - position based on mouse position */}
+                {isHovered && (
+                  <>
+                    <span 
+                      className="droplet" 
+                      style={{ 
+                        left: `${mousePos.x / 4}%`, 
+                        animationDelay: '0s', 
+                        background: color,
+                        zIndex: 5
+                      }}
+                    ></span>
+                    <span 
+                      className="droplet" 
+                      style={{ 
+                        left: `${50 + mousePos.x / 8}%`, 
+                        animationDelay: '0.3s', 
+                        background: color,
+                        zIndex: 5
+                      }}
+                    ></span>
+                    <span 
+                      className="droplet" 
+                      style={{ 
+                        left: `${80 - mousePos.x / 10}%`, 
+                        animationDelay: '0.7s', 
+                        background: color,
+                        zIndex: 5
+                      }}
+                    ></span>
+                  </>
+                )}
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent className="p-4 z-20">
+              <div className="space-y-2">
+                <h4 className="font-bold">{name}</h4>
+                <p className="text-sm">{description}</p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
         </div>
         
         {/* Product Info */}

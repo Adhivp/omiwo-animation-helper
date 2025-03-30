@@ -1,11 +1,11 @@
-
 import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
+import { SimplexNoise } from 'three/examples/jsm/math/SimplexNoise';
 
 interface ThreeSceneProps {
   className?: string;
   color?: string;
-  animationType?: 'wave' | 'ripple' | 'flow' | 'pour';
+  animationType?: 'wave' | 'ripple' | 'flow' | 'pour' | 'bubble';
   productType?: 'toiletCleaner' | 'detergent' | 'handWash';
   isHovered?: boolean;
   mousePosition?: { x: number, y: number };
@@ -14,7 +14,7 @@ interface ThreeSceneProps {
 const ThreeScene = ({ 
   className = '', 
   color = '#33C3F0', 
-  animationType = 'wave',
+  animationType = 'bubble', // Changed default to bubble
   productType,
   isHovered = false,
   mousePosition = { x: 0, y: 0 }
@@ -27,12 +27,14 @@ const ThreeScene = ({
   const timeRef = useRef<number>(0);
   const requestRef = useRef<number | null>(null);
   const initialGeometryRef = useRef<THREE.BufferGeometry | null>(null);
+  const bubblesRef = useRef<THREE.Group | null>(null);
+  const noiseRef = useRef<SimplexNoise | null>(null);
 
   // Get product-specific color
   const getProductColor = (): string => {
     if (productType === 'toiletCleaner') return '#1e3a8a'; // Dark blue for toilet cleaner
     if (productType === 'detergent') return '#3b82f6'; // Blue for detergent
-    if (productType === 'handWash') return '#06b6d4'; // Turquoise for hand wash
+    if (productType === 'handWash') return '#eab308'; // Changed to yellow
     return color; // Default color
   };
 
@@ -41,18 +43,21 @@ const ThreeScene = ({
   useEffect(() => {
     if (!containerRef.current) return;
     
+    // Create a SimplexNoise instance for more organic movement
+    noiseRef.current = new SimplexNoise();
+    
     // Create scene
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     
     // Create camera with adjusted field of view for better perspective
     const camera = new THREE.PerspectiveCamera(
-      70, // Even wider FOV for more dramatic perspective
+      75,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
       1000
     );
-    camera.position.z = 2.0; // Closer camera position for more pronounced effect
+    camera.position.z = 2.2; // Adjusted camera position
     cameraRef.current = camera;
     
     // Create renderer with improved settings
@@ -65,65 +70,64 @@ const ThreeScene = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.3; // Increased exposure
+    renderer.toneMappingExposure = 1.3;
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
     
     // Enhanced lighting setup
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Brighter ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
     
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); // Brighter directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
     // Add point lights for more dramatic effect
-    const pointLight1 = new THREE.PointLight(0xffffff, 1.8, 10); // Brighter point light
+    const pointLight1 = new THREE.PointLight(0xffffff, 1.8, 10);
     pointLight1.position.set(2, 2, 2);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(0xffffff, 1.5, 10); // Brighter point light
+    const pointLight2 = new THREE.PointLight(0xffffff, 1.5, 10);
     pointLight2.position.set(-2, -1, 2);
     scene.add(pointLight2);
 
     // Add a subtle colored point light based on product color
-    const colorLight = new THREE.PointLight(new THREE.Color(productColor), 1.2, 10); // Brighter color light
+    const colorLight = new THREE.PointLight(new THREE.Color(productColor), 1.2, 10);
     colorLight.position.set(0, 0, 2);
     scene.add(colorLight);
     
-    // Create geometry based on animation type and product type
+    // Create geometry based on animation type
     let geometry;
     
-    if (animationType === 'wave') {
-      // Higher resolution for smoother waves
+    if (animationType === 'bubble') {
+      // High-res sphere for main liquid body
+      geometry = new THREE.SphereGeometry(1, 128, 128);
+    } else if (animationType === 'wave') {
       geometry = new THREE.SphereGeometry(1, 128, 128);
     } else if (animationType === 'ripple') {
-      // Torus for ripple effect
       geometry = new THREE.TorusGeometry(0.7, 0.3, 128, 128);
     } else if (animationType === 'pour') {
-      // Pour animation - elongated shape like pouring liquid
       geometry = new THREE.CylinderGeometry(0.5, 0.7, 1.5, 64, 64, false);
     } else { // flow
-      // More complex geometry for flow effect
       geometry = new THREE.IcosahedronGeometry(1, 12);
     }
     
     // Store initial geometry for animation
     initialGeometryRef.current = geometry.clone();
     
-    // Create more realistic liquid material with improved properties
+    // Create more realistic liquid material
     const material = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(productColor),
       transparent: true,
       opacity: 0.85,
       metalness: 0.1,
       roughness: 0.2,
-      clearcoat: 1,
+      clearcoat: 0.8,
       clearcoatRoughness: 0.1,
-      transmission: 0.7, // More transparent like liquid
-      reflectivity: 0.8, // Enhanced reflectivity
-      ior: 1.6, // Higher index of refraction (more glass-like)
-      envMapIntensity: 1.8, // Enhanced environment map intensity
+      transmission: 0.7,
+      reflectivity: 0.8,
+      ior: 1.4,
+      envMapIntensity: 1.8,
       side: THREE.DoubleSide,
     });
     
@@ -132,6 +136,13 @@ const ThreeScene = ({
     scene.add(mesh);
     meshRef.current = mesh;
 
+    // Add bubble particles for more realism
+    if (animationType === 'bubble') {
+      const bubbles = createBubbles(productColor);
+      scene.add(bubbles);
+      bubblesRef.current = bubbles;
+    }
+    
     // Optimized animation function with enhanced mouse responsiveness
     const animate = () => {
       if (!meshRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
@@ -141,6 +152,11 @@ const ThreeScene = ({
       
       // Update based on animations and mouse position
       updateAnimation(time, mousePosition);
+      
+      // Update bubbles if they exist
+      if (bubblesRef.current && animationType === 'bubble') {
+        updateBubbles(time);
+      }
       
       // Render the scene
       rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -184,32 +200,179 @@ const ThreeScene = ({
         meshRef.current.geometry.dispose();
         (meshRef.current.material as THREE.Material).dispose();
       }
+
+      // Clean up bubbles
+      if (bubblesRef.current) {
+        bubblesRef.current.children.forEach(bubble => {
+          if (bubble instanceof THREE.Mesh) {
+            bubble.geometry.dispose();
+            (bubble.material as THREE.Material).dispose();
+          }
+        });
+      }
     };
   }, [animationType, color, productColor, productType]);
+
+  // Create bubble particles
+  function createBubbles(color: string) {
+    const group = new THREE.Group();
+    const bubbleCount = 20;
+    
+    // Create bubble material with adjusted transparency and refraction
+    const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(color).offsetHSL(0, 0, 0.2), // Lighter version of main color
+      transparent: true,
+      opacity: 0.6,
+      metalness: 0.1,
+      roughness: 0.1,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+      transmission: 0.95, // Very transparent
+      ior: 1.3, // Realistic refraction index for soap bubbles
+      side: THREE.DoubleSide,
+    });
+    
+    // Create multiple bubbles with varying sizes
+    for (let i = 0; i < bubbleCount; i++) {
+      const size = THREE.MathUtils.randFloat(0.05, 0.15);
+      const detail = Math.floor(size * 50) + 8; // Higher detail for larger bubbles
+      const geometry = new THREE.SphereGeometry(size, detail, detail);
+      
+      const bubble = new THREE.Mesh(geometry, bubbleMaterial);
+      
+      // Random starting positions within and around the main liquid
+      const radius = 1.3;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+      
+      bubble.position.x = radius * Math.sin(phi) * Math.cos(theta);
+      bubble.position.y = radius * Math.sin(phi) * Math.sin(theta);
+      bubble.position.z = radius * Math.cos(phi);
+      
+      // Store original position and random speed
+      bubble.userData.originalPos = bubble.position.clone();
+      bubble.userData.speed = THREE.MathUtils.randFloat(0.2, 0.6);
+      bubble.userData.offset = Math.random() * Math.PI * 2; // Phase offset
+      
+      group.add(bubble);
+    }
+    
+    return group;
+  }
+  
+  // Update bubble positions
+  function updateBubbles(time: number) {
+    if (!bubblesRef.current || !meshRef.current) return;
+    
+    bubblesRef.current.children.forEach((bubble, i) => {
+      if (!(bubble instanceof THREE.Mesh)) return;
+      
+      const originalPos = bubble.userData.originalPos as THREE.Vector3;
+      const speed = bubble.userData.speed as number;
+      const offset = bubble.userData.offset as number;
+      
+      // Bobbing motion - each bubble moves on its own path
+      const factor = time * speed + offset;
+      
+      // Unique bubble movement based on noise
+      const nx = originalPos.x * 0.1;
+      const ny = originalPos.y * 0.1;
+      const nz = originalPos.z * 0.1 + time * 0.05;
+      
+      const noise = noiseRef.current ? noiseRef.current.noise3d(nx, ny, nz) : 0;
+      
+      // Combined movement
+      bubble.position.x = originalPos.x + Math.sin(factor) * 0.1 + noise * 0.1;
+      bubble.position.y = originalPos.y + Math.sin(factor * 1.3) * 0.1 + noise * 0.1;
+      bubble.position.z = originalPos.z + Math.sin(factor * 0.7) * 0.1 + noise * 0.1;
+      
+      // Scale pulse effect
+      const scale = 1 + Math.sin(time * 2 + i) * 0.05;
+      bubble.scale.set(scale, scale, scale);
+    });
+  }
 
   // Updated function to handle animation with mouse position
   function updateAnimation(time: number, mousePos: {x: number, y: number} = {x: 0, y: 0}) {
     if (!meshRef.current) return;
 
-    // Apply rotation based on mouse position - more responsive
-    // Direct cursor influence - more responsive rotation
-    const targetRotationX = (mousePos.y * 0.3); // Increased from 0.2 to 0.3
-    const targetRotationY = (-mousePos.x * 0.3); // Increased from 0.2 to 0.3
+    // Apply rotation based on mouse position
+    const targetRotationX = (mousePos.y * 0.4); // Increased responsiveness
+    const targetRotationY = (-mousePos.x * 0.4);
     
     // Smooth rotation towards mouse position - faster response
-    meshRef.current.rotation.x += (targetRotationX - meshRef.current.rotation.x) * 0.08; // Increased from 0.05 to 0.08
-    meshRef.current.rotation.y += (targetRotationY - meshRef.current.rotation.y) * 0.08; // Increased from 0.05 to 0.08
+    meshRef.current.rotation.x += (targetRotationX - meshRef.current.rotation.x) * 0.1;
+    meshRef.current.rotation.y += (targetRotationY - meshRef.current.rotation.y) * 0.1;
     
     // Apply cursor-influenced distortion
     applyMouseDistortion(mousePos);
     
     // Apply animation based on type
-    applyTypedAnimation(time, mousePos);
+    if (animationType === 'bubble') {
+      applyBubbleAnimation(time, mousePos);
+    } else {
+      applyTypedAnimation(time, mousePos);
+    }
+  }
+
+  // New bubble animation function
+  function applyBubbleAnimation(time: number, mousePos: {x: number, y: number}) {
+    if (!meshRef.current || !initialGeometryRef.current) return;
+    
+    const positions = meshRef.current.geometry.attributes.position;
+    const initialPositions = initialGeometryRef.current.attributes.position;
+    
+    if (!positions || !initialPositions || positions.count !== initialPositions.count) return;
+    
+    // Mouse influence factor
+    const mouseInfluence = Math.sqrt(mousePos.x * mousePos.x + mousePos.y * mousePos.y) * 0.8;
+    
+    // Make sure both attributes are BufferAttribute instances
+    if (positions instanceof THREE.BufferAttribute && initialPositions instanceof THREE.BufferAttribute) {
+      for (let i = 0; i < positions.count; i++) {
+        const vertex = new THREE.Vector3();
+        vertex.fromBufferAttribute(initialPositions, i);
+        
+        // Get vertex direction for spherical deformation
+        const vertexDir = vertex.clone().normalize();
+        
+        // Use noise for organic, flowing wave patterns
+        const nx = vertexDir.x * 3;
+        const ny = vertexDir.y * 3;
+        const nz = vertexDir.z * 3 + time * 0.5;
+        
+        // Add dynamic, flowing noise-based displacement
+        const noise = noiseRef.current ? noiseRef.current.noise3d(nx, ny, nz) : 0;
+        
+        // Combine multiple wave patterns at different frequencies
+        const waveX1 = 0.08 * Math.sin(vertexDir.x * 8 + time * 1.5);
+        const waveY1 = 0.08 * Math.sin(vertexDir.y * 8 + time * 1.2);
+        
+        // Get mouse influence direction
+        const mouseDir = new THREE.Vector3(mousePos.x, mousePos.y, 0).normalize();
+        const mouseEffect = Math.pow(Math.max(0, vertexDir.dot(mouseDir) + 0.5), 2) * 0.15 * mouseInfluence;
+        
+        // Combine all effects with noise
+        const totalDisplacement = 0.12 + noise * 0.1 + waveX1 + waveY1 + mouseEffect;
+        
+        // Apply displacement along normal
+        vertex.x += vertexDir.x * totalDisplacement;
+        vertex.y += vertexDir.y * totalDisplacement;
+        vertex.z += vertexDir.z * totalDisplacement;
+        
+        positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
+      }
+      
+      positions.needsUpdate = true;
+      
+      // Gentle overall movement
+      meshRef.current.position.y = Math.sin(time * 0.6) * 0.06;
+    }
   }
 
   // Enhanced function to apply mouse-based distortion to the mesh vertices
   function applyMouseDistortion(mousePos: {x: number, y: number}) {
-    if (!meshRef.current || !initialGeometryRef.current) return;
+    if (!meshRef.current || !initialGeometryRef.current || animationType === 'bubble') return;
     
     const positions = meshRef.current.geometry.attributes.position;
     const initialPositions = initialGeometryRef.current.attributes.position;
@@ -225,8 +388,8 @@ const ThreeScene = ({
         vertex.fromBufferAttribute(initialPositions, i);
       
         // Calculate influence based on normalized mouse position - increased effect
-        const mouseInfluenceX = mousePos.x * 0.05; // Increased from 0.03 to 0.05
-        const mouseInfluenceY = mousePos.y * 0.05; // Increased from 0.03 to 0.05
+        const mouseInfluenceX = mousePos.x * 0.05;
+        const mouseInfluenceY = mousePos.y * 0.05;
         
         // Apply distortion
         vertex.x += vertex.x * mouseInfluenceX;
@@ -279,8 +442,8 @@ const ThreeScene = ({
       vertex.fromBufferAttribute(initialPositions, i);
       
       // More complex wave pattern with mouse influence - increased amplitude and speed
-      const amplitudeFactor = 0.12 + (mouseInfluence * 0.08); // Increased from 0.08+0.05 to 0.12+0.08
-      const speedFactor = 2.5 + (mouseInfluence * 2.0); // Increased from 2+1.5 to 2.5+2.0
+      const amplitudeFactor = 0.12 + (mouseInfluence * 0.08); 
+      const speedFactor = 2.5 + (mouseInfluence * 2.0); 
       
       const waveX = amplitudeFactor * Math.sin(vertex.x * 8 + time * speedFactor);
       const waveY = amplitudeFactor * Math.sin(vertex.y * 8 + time * (speedFactor + 0.5));

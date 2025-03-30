@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import ScrollReveal from './ScrollReveal';
 import ProductCard from './ProductCard';
@@ -9,31 +8,28 @@ const ProductShowcase = () => {
       name: 'Premium Toilet Cleaner',
       description: 'Microbial Cleaners & Non-Abrasive Cleaning Solutions for effective bathroom hygiene.',
       color: '#1e3a8a', // Dark blue for toilet cleaner
-      animationType: 'flow' as const,
+      animationType: 'bubble' as const, 
       productType: 'toiletCleaner' as const,
-      imageSrc: '/lovable-uploads/0b003781-ade8-4b60-bb2f-d659dba0b5df.png'
     },
     {
       name: 'Liquid Detergent',
       description: 'Color-safe technology with 99.9% germ defense for all your laundry needs.',
       color: '#3b82f6', // Blue for detergent
-      animationType: 'pour' as const,
+      animationType: 'bubble' as const, 
       productType: 'detergent' as const,
-      imageSrc: '/lovable-uploads/36d74862-7337-4fbb-910a-4278c0831ed8.png'
     },
     {
       name: 'Advanced Hand Wash',
       description: 'Antimicrobial Formulations with Long-lasting Protection for gentle hand care.',
-      color: '#06b6d4', // Turquoise for hand wash
-      animationType: 'ripple' as const,
+      color: '#eab308', // Changed to yellow (#eab308)
+      animationType: 'bubble' as const, 
       productType: 'handWash' as const,
-      imageSrc: '/lovable-uploads/67497743-70f1-458a-9924-39c1c7397a0e.png'
     }
   ];
 
   return (
     <section id="products" className="section-padding relative overflow-hidden">
-      {/* Background Shapes */}
+      {/* Enhanced Background Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200 rounded-full opacity-20 blur-3xl -translate-y-1/2 translate-x-1/3"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-200 rounded-full opacity-20 blur-3xl translate-y-1/2 -translate-x-1/3"></div>
       
@@ -58,7 +54,6 @@ const ProductShowcase = () => {
               color={product.color}
               animationType={product.animationType}
               productType={product.productType}
-              imageSrc={product.imageSrc}
               delay={index * 200}
             />
           ))}
