@@ -216,7 +216,7 @@ const ThreeScene = ({
   // Create bubble particles
   function createBubbles(color: string) {
     const group = new THREE.Group();
-    const bubbleCount = 20;
+    const bubbleCount = 30; // Increased from 20 to 30 for more visible effect
     
     // Create bubble material with adjusted transparency and refraction
     const bubbleMaterial = new THREE.MeshPhysicalMaterial({
@@ -234,14 +234,15 @@ const ThreeScene = ({
     
     // Create multiple bubbles with varying sizes
     for (let i = 0; i < bubbleCount; i++) {
-      const size = THREE.MathUtils.randFloat(0.05, 0.15);
+      const size = THREE.MathUtils.randFloat(0.05, 0.2); // Slightly larger max size
       const detail = Math.floor(size * 50) + 8; // Higher detail for larger bubbles
       const geometry = new THREE.SphereGeometry(size, detail, detail);
       
       const bubble = new THREE.Mesh(geometry, bubbleMaterial);
       
       // Random starting positions within and around the main liquid
-      const radius = 1.3;
+      // Use smaller radius to start bubbles closer to center
+      const radius = THREE.MathUtils.randFloat(0.6, 1.2);
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
       
@@ -251,8 +252,15 @@ const ThreeScene = ({
       
       // Store original position and random speed
       bubble.userData.originalPos = bubble.position.clone();
-      bubble.userData.speed = THREE.MathUtils.randFloat(0.2, 0.6);
+      bubble.userData.speed = THREE.MathUtils.randFloat(0.2, 0.8); // Slightly faster max speed
       bubble.userData.offset = Math.random() * Math.PI * 2; // Phase offset
+      bubble.userData.outwardDirection = new THREE.Vector3(
+        bubble.position.x,
+        bubble.position.y,
+        bubble.position.z
+      ).normalize();
+      bubble.userData.maxDistance = THREE.MathUtils.randFloat(1.5, 3.0); // How far bubbles can travel
+      bubble.userData.initialDistance = bubble.position.length();
       
       group.add(bubble);
     }
@@ -270,6 +278,12 @@ const ThreeScene = ({
       const originalPos = bubble.userData.originalPos as THREE.Vector3;
       const speed = bubble.userData.speed as number;
       const offset = bubble.userData.offset as number;
+      const outwardDirection = bubble.userData.outwardDirection as THREE.Vector3;
+      const maxDistance = bubble.userData.maxDistance as number;
+      const initialDistance = bubble.userData.initialDistance as number;
+      
+      // Time-based movement outward
+      const outwardFactor = Math.min(time * speed * 0.1, maxDistance - initialDistance);
       
       // Bobbing motion - each bubble moves on its own path
       const factor = time * speed + offset;
@@ -281,10 +295,36 @@ const ThreeScene = ({
       
       const noise = noiseRef.current ? noiseRef.current.noise3d(nx, ny, nz) : 0;
       
-      // Combined movement
-      bubble.position.x = originalPos.x + Math.sin(factor) * 0.1 + noise * 0.1;
-      bubble.position.y = originalPos.y + Math.sin(factor * 1.3) * 0.1 + noise * 0.1;
-      bubble.position.z = originalPos.z + Math.sin(factor * 0.7) * 0.1 + noise * 0.1;
+      // Combined movement: original position + outward direction + bobbing + noise
+      const outwardMovement = outwardDirection.clone().multiplyScalar(outwardFactor);
+      
+      // Reset bubble position if it goes too far
+      if (outwardFactor >= maxDistance - initialDistance - 0.1) {
+        // Reset to a new random position near the center
+        const radius = THREE.MathUtils.randFloat(0.6, 1.0);
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        const newX = radius * Math.sin(phi) * Math.cos(theta);
+        const newY = radius * Math.sin(phi) * Math.sin(theta);
+        const newZ = radius * Math.cos(phi);
+        
+        // Update position and metadata
+        bubble.position.set(newX, newY, newZ);
+        bubble.userData.originalPos = bubble.position.clone();
+        bubble.userData.outwardDirection = new THREE.Vector3(newX, newY, newZ).normalize();
+        bubble.userData.initialDistance = bubble.position.length();
+        
+        // Generate new random properties
+        bubble.userData.speed = THREE.MathUtils.randFloat(0.2, 0.8);
+        bubble.userData.offset = Math.random() * Math.PI * 2;
+        bubble.userData.maxDistance = THREE.MathUtils.randFloat(1.5, 3.0);
+      } else {
+        // Normal movement
+        bubble.position.x = originalPos.x + outwardMovement.x + Math.sin(factor) * 0.1 + noise * 0.1;
+        bubble.position.y = originalPos.y + outwardMovement.y + Math.sin(factor * 1.3) * 0.1 + noise * 0.1;
+        bubble.position.z = originalPos.z + outwardMovement.z + Math.sin(factor * 0.7) * 0.1 + noise * 0.1;
+      }
       
       // Scale pulse effect
       const scale = 1 + Math.sin(time * 2 + i) * 0.05;

@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
@@ -8,8 +7,15 @@ const Hero = () => {
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [prevMousePosition, setPrevMousePosition] = useState({ x: 0, y: 0 });
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
+    // Initial viewport size
+    setViewportSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
@@ -22,13 +28,21 @@ const Hero = () => {
       
       // Use smooth transition for mouse movement with easing
       setMousePosition(prev => ({
-        x: prev.x + (x - prev.x) * 0.05,  // Reduced easing factor for even smoother motion
+        x: prev.x + (x - prev.x) * 0.05,  // Reduced easing factor for smoother motion
         y: prev.y + (y - prev.y) * 0.05   
       }));
     };
     
+    const handleResize = () => {
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+    
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('resize', handleResize);
     
     // Initial animation
     const animateInitial = () => {
@@ -43,6 +57,7 @@ const Hero = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
       clearInterval(initialAnimationId);
     };
   }, [mousePosition]);
@@ -58,6 +73,13 @@ const Hero = () => {
   const parallaxX = mousePosition.x * 20 + velocityX * 10; 
   const parallaxY = mousePosition.y * 20 + velocityY * 10;
 
+  // Scale the 3D scene based on viewport size for better responsiveness
+  const getSceneSize = () => {
+    const baseSize = 100; // Base percentage
+    const scaleFactor = viewportSize.width < 768 ? 1.5 : 1.2; // More pronounced on mobile
+    return `${baseSize * scaleFactor}%`;
+  };
+
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
       {/* Enhanced 3D Background with more natural cursor interaction */}
@@ -65,15 +87,42 @@ const Hero = () => {
         className="absolute inset-0 z-0"
         style={{
           transform: `translate(${-parallaxX}px, ${-parallaxY}px)`,
-          transition: 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+          transition: 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          width: getSceneSize(),
+          height: getSceneSize(),
+          left: `calc(50% - ${parseInt(getSceneSize()) / 2}%)`,
+          top: `calc(50% - ${parseInt(getSceneSize()) / 2}%)`,
         }}
       >
         <ThreeScene 
-          animationType="wave" 
+          animationType="bubble" 
           color="#3b82f6"
           mousePosition={mousePosition}
           className="absolute inset-0"
+          isHovered={true} // Always show bubbles
         />
+      </div>
+      
+      {/* Floating bubbles outside the main scene */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(12)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute rounded-full opacity-80 bubble-float"
+            style={{
+              background: `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(59, 130, 246, 0.${Math.floor(Math.random() * 4) + 2}))`,
+              width: `${Math.random() * 60 + 20}px`,
+              height: `${Math.random() * 60 + 20}px`,
+              left: `${Math.random() * 90 + 5}%`,
+              top: `${Math.random() * 100 + 5}%`,
+              filter: 'blur(1px)',
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: `${Math.random() * 15 + 10}s`,
+              boxShadow: '0 0 10px rgba(255, 255, 255, 0.7) inset',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+            }}
+          />
+        ))}
       </div>
       
       {/* Darker Overlay with gradient */}
@@ -82,7 +131,7 @@ const Hero = () => {
       {/* Content with enhanced text visibility */}
       <div
         ref={textRef}
-        className="relative z-10 text-center px-4 transition-all duration-300"
+        className="relative z-10 text-center px-4 transition-all duration-300 max-w-screen-xl mx-auto"
         style={{
           opacity,
           transform: `translate(${parallaxX * 0.02}px, ${translateY + parallaxY * 0.02}px)`
