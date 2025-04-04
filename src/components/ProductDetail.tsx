@@ -283,15 +283,17 @@ const ProductDetail = () => {
                 
                 <ScrollReveal delay={500}>
                   <div className="space-y-4">
-                    <Link
-                      to="/#contact"
+                    <a
+                      href="https://wa.me/917306379513?text=Hello, I'm interested in your product: Premium Toilet Cleaner"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="liquid-button w-full text-center flex items-center justify-center group"
                     >
                       <span className="relative z-10">Contact for Purchase</span>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
-                    </Link>
+                    </a>
                   </div>
                 </ScrollReveal>
               </div>
