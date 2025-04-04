@@ -216,7 +216,7 @@ const ThreeScene = ({
   // Create bubble particles
   function createBubbles(color: string) {
     const group = new THREE.Group();
-    const bubbleCount = 30; // Increased from 20 to 30 for more visible effect
+    const bubbleCount = 100; // Increased from 20 to 30 for more visible effect
     
     // Create bubble material with adjusted transparency and refraction
     const bubbleMaterial = new THREE.MeshPhysicalMaterial({
@@ -271,61 +271,50 @@ const ThreeScene = ({
   // Update bubble positions
   function updateBubbles(time: number) {
     if (!bubblesRef.current || !meshRef.current) return;
-    
+
     bubblesRef.current.children.forEach((bubble, i) => {
       if (!(bubble instanceof THREE.Mesh)) return;
-      
+
       const originalPos = bubble.userData.originalPos as THREE.Vector3;
       const speed = bubble.userData.speed as number;
       const offset = bubble.userData.offset as number;
       const outwardDirection = bubble.userData.outwardDirection as THREE.Vector3;
       const maxDistance = bubble.userData.maxDistance as number;
       const initialDistance = bubble.userData.initialDistance as number;
-      
+
       // Time-based movement outward
-      const outwardFactor = Math.min(time * speed * 0.1, maxDistance - initialDistance);
-      
+      const outwardFactor = time * speed * 0.1;
+
       // Bobbing motion - each bubble moves on its own path
       const factor = time * speed + offset;
-      
+
       // Unique bubble movement based on noise
       const nx = originalPos.x * 0.1;
       const ny = originalPos.y * 0.1;
       const nz = originalPos.z * 0.1 + time * 0.05;
-      
+
       const noise = noiseRef.current ? noiseRef.current.noise3d(nx, ny, nz) : 0;
-      
+
       // Combined movement: original position + outward direction + bobbing + noise
       const outwardMovement = outwardDirection.clone().multiplyScalar(outwardFactor);
-      
+
       // Reset bubble position if it goes too far
-      if (outwardFactor >= maxDistance - initialDistance - 0.1) {
-        // Reset to a new random position near the center
-        const radius = THREE.MathUtils.randFloat(0.6, 1.0);
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        
-        const newX = radius * Math.sin(phi) * Math.cos(theta);
-        const newY = radius * Math.sin(phi) * Math.sin(theta);
-        const newZ = radius * Math.cos(phi);
-        
-        // Update position and metadata
-        bubble.position.set(newX, newY, newZ);
-        bubble.userData.originalPos = bubble.position.clone();
-        bubble.userData.outwardDirection = new THREE.Vector3(newX, newY, newZ).normalize();
-        bubble.userData.initialDistance = bubble.position.length();
-        
-        // Generate new random properties
-        bubble.userData.speed = THREE.MathUtils.randFloat(0.2, 0.8);
-        bubble.userData.offset = Math.random() * Math.PI * 2;
-        bubble.userData.maxDistance = THREE.MathUtils.randFloat(1.5, 3.0);
+      if (outwardFactor >= maxDistance - initialDistance) {
+        // Reset to the original position
+        bubble.position.copy(originalPos);
+
+        // Recalculate outward direction
+        bubble.userData.outwardDirection = originalPos.clone().normalize();
+
+        // Reset outward factor to restart movement
+        bubble.userData.offset = Math.random() * Math.PI * 2; // Randomize phase offset for variety
       } else {
         // Normal movement
         bubble.position.x = originalPos.x + outwardMovement.x + Math.sin(factor) * 0.1 + noise * 0.1;
         bubble.position.y = originalPos.y + outwardMovement.y + Math.sin(factor * 1.3) * 0.1 + noise * 0.1;
         bubble.position.z = originalPos.z + outwardMovement.z + Math.sin(factor * 0.7) * 0.1 + noise * 0.1;
       }
-      
+
       // Scale pulse effect
       const scale = 1 + Math.sin(time * 2 + i) * 0.05;
       bubble.scale.set(scale, scale, scale);

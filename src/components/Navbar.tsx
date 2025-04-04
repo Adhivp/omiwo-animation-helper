@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import GoldCoinDraw from './GoldCoinDraw';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [goldDrawOpen, setGoldDrawOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,13 +34,23 @@ const Navbar = () => {
         <a href="#" className="text-2xl font-bold text-gradient">OMIWO</a>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-12">
+        <div className="hidden md:flex items-center space-x-8">
           <a href="#products" className="text-foreground/80 hover:text-foreground transition-colors">Products</a>
           <a href="#about" className="text-foreground/80 hover:text-foreground transition-colors">About</a>
           <a href="#contact" className="text-foreground/80 hover:text-foreground transition-colors">Contact</a>
-          <button className="liquid-button">
-            <span className="relative z-10">Shop Now</span>
+          <button 
+            onClick={() => setGoldDrawOpen(true)} 
+            className="flex items-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-2 rounded-full font-medium hover:shadow-lg hover:from-yellow-500 hover:to-amber-600 transition-all transform hover:-translate-y-0.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" fill="#FFD700" strokeWidth="0"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" stroke="#B8860B" d="M12 6v12M8 12h8"/>
+            </svg>
+            <span>Win Gold Coin</span>
           </button>
+          <a href="" className="liquid-button">
+            <span className="relative z-10">Get Started</span>
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -87,13 +98,30 @@ const Navbar = () => {
         >
           Contact
         </a>
-        <button 
+        <button
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setGoldDrawOpen(true);
+          }}
+          className="flex items-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-6 py-3 rounded-full font-medium"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" fill="#FFD700" strokeWidth="0"/>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" stroke="#B8860B" d="M12 6v12M8 12h8"/>
+          </svg>
+          Win Gold Coin
+        </button>
+        <a 
+          href="" 
           className="liquid-button mt-4"
           onClick={() => setMobileMenuOpen(false)}
         >
-          <span className="relative z-10">Shop Now</span>
-        </button>
+          <span className="relative z-10">Get Started</span>
+        </a>
       </div>
+
+      {/* Gold Coin Draw Dialog */}
+      <GoldCoinDraw open={goldDrawOpen} onOpenChange={setGoldDrawOpen} />
     </nav>
   );
 };

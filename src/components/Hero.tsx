@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
+import GoldCoinDraw from './GoldCoinDraw';
 
 const Hero = () => {
   const textRef = useRef<HTMLDivElement>(null);
@@ -8,6 +9,7 @@ const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [prevMousePosition, setPrevMousePosition] = useState({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [goldDrawOpen, setGoldDrawOpen] = useState(false);
 
   useEffect(() => {
     // Initial viewport size
@@ -166,6 +168,38 @@ const Hero = () => {
             </a>
           </div>
         </ScrollReveal>
+        
+        {/* Gold Coin Lucky Draw Promotion */}
+        <ScrollReveal delay={800}>
+          <div className="relative mt-8 max-w-md mx-auto animate-float">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-amber-500 rounded-lg blur-md opacity-80"></div>
+            <button 
+              onClick={() => setGoldDrawOpen(true)}
+              className="relative w-full px-6 py-3 bg-gradient-to-r from-yellow-300 to-amber-500 rounded-lg overflow-hidden group"
+            >
+              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                <div className="w-32 h-32 rounded-full bg-white/30 filter blur-md"></div>
+              </div>
+              <div className="flex items-center justify-center relative z-10">
+                <div className="mr-3 w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="8" fill="#FFD700" strokeWidth="0"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" stroke="#B8860B" d="M12 8v8M8 12h8"/>
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-white font-bold text-sm sm:text-base">Win a 24K Gold Coin!</p>
+                  <p className="text-yellow-100 text-xs sm:text-sm">Limited time offer - Enter now</p>
+                </div>
+                <div className="ml-auto transform group-hover:translate-x-1 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+          </div>
+        </ScrollReveal>
       </div>
       
       {/* Scroll Indicator */}
@@ -174,6 +208,9 @@ const Hero = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
       </div>
+      
+      {/* Gold Coin Draw Dialog */}
+      <GoldCoinDraw open={goldDrawOpen} onOpenChange={setGoldDrawOpen} />
     </section>
   );
 };
