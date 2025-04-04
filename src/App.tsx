@@ -9,6 +9,7 @@ import ProductShowcase from "./components/ProductShowcase";
 import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
 import GetStarted from "./components/GetStarted";
+import ProductDetail from "./components/ProductDetail";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             }
           />
           <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/product/:productId" element={<ProductDetail />} />
         </Routes>
       </Router>
     </TooltipProvider>

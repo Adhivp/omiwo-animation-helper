@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
@@ -26,6 +27,13 @@ const ProductCard = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  // Get product ID for routing
+  const getProductId = () => {
+    if (productType === 'toiletCleaner') return 'toilet-cleaner';
+    if (productType === 'detergent') return 'liquid-detergent';
+    return 'hand-wash';
+  };
 
   // Enhanced 3D tilt effect on hover with mouse tracking
   useEffect(() => {
@@ -90,10 +98,10 @@ const ProductCard = ({
       };
     } else { // handWash
       return {
-        bgColor: 'bg-yellow-50', // Changed from cyan to yellow', // Changed from cyan to yellow
-        textColor: 'text-yellow-900', // Changed from cyan to yellow', // Changed from cyan to yellow
-        borderColor: 'border-yellow-200', // Changed from cyan to yellow', // Changed from cyan to yellow
-        buttonBg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', // Changed gradient00', // Changed gradient
+        bgColor: 'bg-yellow-50', // Changed from cyan to yellow
+        textColor: 'text-yellow-900', // Changed from cyan to yellow
+        borderColor: 'border-yellow-200', // Changed from cyan to yellow
+        buttonBg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', // Changed gradient
         accent: 'text-yellow-500', // Kept as yellow
         hoverAccent: 'group-hover:bg-yellow-500', // Kept as yellow
         productImage: '/lovable-uploads/HW_-removebg-preview.png' // Verified path
@@ -229,9 +237,12 @@ const ProductCard = ({
             )}
           </div>
           
-          <button className={`w-full py-3 rounded-full text-white font-medium transition-all duration-300 ${style.buttonBg} hover:shadow-lg transform hover:-translate-y-1`}>
+          <Link 
+            to={`/product/${getProductId()}`}
+            className={`w-full py-3 rounded-full text-white font-medium transition-all duration-300 ${style.buttonBg} hover:shadow-lg transform hover:-translate-y-1 block text-center`}
+          >
             Learn More
-          </button>
+          </Link>
         </div>
       </div>
     </ScrollReveal>
