@@ -86,23 +86,19 @@ const Hero = () => {
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
       {/* Enhanced 3D Background with more natural cursor interaction */}
       <div 
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 flex items-center justify-center"
         style={{
           transform: `translate(${-parallaxX}px, ${-parallaxY}px)`,
-          transition: 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)',
-          width: getSceneSize(),
-          height: getSceneSize(),
-          left: `calc(50% - ${parseInt(getSceneSize()) / 2}%)`,
-          top: `calc(50% - ${parseInt(getSceneSize()) / 2}%)`,
         }}
       >
-        <ThreeScene 
-          animationType="bubble" 
-          color="#3b82f6"
-          mousePosition={mousePosition}
-          className="absolute inset-0"
-          isHovered={true} // Always show bubbles
-        />
+        <div className="w-full h-full" style={{ maxWidth: '150%', maxHeight: '150%' }}>
+          <ThreeScene 
+            animationType="bubble" 
+            color="#3b82f6"
+            mousePosition={mousePosition}
+            isHovered={true} // Always show bubbles
+          />
+        </div>
       </div>
       
       {/* Floating bubbles outside the main scene */}

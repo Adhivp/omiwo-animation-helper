@@ -139,15 +139,16 @@ const ProductCard = ({
         
         {/* Product Visualization with Animated Background and Product Image */}
         <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100">
-          {/* Animated Liquid Background - Keep existing 3D animation */}
-          <ThreeScene 
-            animationType={animationType} 
-            color={color} 
-            productType={productType}
-            isHovered={isHovered}
-            mousePosition={mousePos}
-            className="absolute inset-0"
-          />
+          {/* Animated Liquid Background - Ensure it fills the container properly */}
+          <div className="absolute inset-0 w-full h-full">
+            <ThreeScene 
+              animationType={animationType} 
+              color={color} 
+              productType={productType}
+              isHovered={isHovered}
+              mousePosition={mousePos}
+            />
+          </div>
           
           {/* Product Image Overlay - Fix visibility issues */}
           <HoverCard>

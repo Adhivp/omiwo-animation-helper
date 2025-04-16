@@ -57,7 +57,7 @@ const ThreeScene = ({
       0.1,
       1000
     );
-    camera.position.z = 2.2; // Adjusted camera position
+    camera.position.z = 2.2;
     cameraRef.current = camera;
     
     // Create renderer with improved settings
@@ -143,6 +143,11 @@ const ThreeScene = ({
       bubblesRef.current = bubbles;
     }
     
+    // Force initial render to ensure correct sizing
+    if (rendererRef.current && sceneRef.current && cameraRef.current) {
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    }
+    
     // Optimized animation function with enhanced mouse responsiveness
     const animate = () => {
       if (!meshRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
@@ -168,20 +173,51 @@ const ThreeScene = ({
     // Start animation
     requestRef.current = requestAnimationFrame(animate);
     
-    // Handle resize
+    // Handle resize with debounce for better performance
+    let resizeTimeoutId: number | null = null;
     const handleResize = () => {
       if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
       
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
+      // Clear previous timeout
+      if (resizeTimeoutId) {
+        window.clearTimeout(resizeTimeoutId);
+      }
       
-      cameraRef.current.aspect = width / height;
-      cameraRef.current.updateProjectionMatrix();
-      
-      rendererRef.current.setSize(width, height);
+      // Set a timeout to prevent too frequent updates
+      resizeTimeoutId = window.setTimeout(() => {
+        const width = containerRef.current?.clientWidth || 300;
+        const height = containerRef.current?.clientHeight || 300;
+        
+        if (cameraRef.current) {
+          cameraRef.current.aspect = width / height;
+          cameraRef.current.updateProjectionMatrix();
+        }
+        
+        if (rendererRef.current) {
+          rendererRef.current.setSize(width, height);
+        }
+      }, 100);
     };
     
+    // Add the resize event listener
     window.addEventListener('resize', handleResize);
+    
+    // Initial resize to make sure everything fits correctly
+    handleResize();
+    
+    // Create a ResizeObserver to detect changes in the container's dimensions
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.target === containerRef.current) {
+          handleResize();
+        }
+      }
+    });
+    
+    // Observe the container
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
     
     // Clean up
     return () => {
@@ -191,6 +227,11 @@ const ThreeScene = ({
       
       window.removeEventListener('resize', handleResize);
       
+      if (resizeObserver && containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+        resizeObserver.disconnect();
+      }
+      
       if (rendererRef.current && containerRef.current) {
         containerRef.current.removeChild(rendererRef.current.domElement);
       }
@@ -198,17 +239,26 @@ const ThreeScene = ({
       // Dispose geometries and materials
       if (meshRef.current) {
         meshRef.current.geometry.dispose();
-        (meshRef.current.material as THREE.Material).dispose();
+        if (meshRef.current.material instanceof THREE.Material) {
+          meshRef.current.material.dispose();
+        }
       }
 
-      // Clean up bubbles
+      // Clean up bubbles with proper checks
       if (bubblesRef.current) {
         bubblesRef.current.children.forEach(bubble => {
           if (bubble instanceof THREE.Mesh) {
             bubble.geometry.dispose();
-            (bubble.material as THREE.Material).dispose();
+            if (bubble.material instanceof THREE.Material) {
+              bubble.material.dispose();
+            }
           }
         });
+      }
+      
+      // Clear timeout if it exists
+      if (resizeTimeoutId) {
+        window.clearTimeout(resizeTimeoutId);
       }
     };
   }, [animationType, color, productColor, productType]);
@@ -216,7 +266,7 @@ const ThreeScene = ({
   // Create bubble particles
   function createBubbles(color: string) {
     const group = new THREE.Group();
-    const bubbleCount = 100; // Increased from 20 to 30 for more visible effect
+    const bubbleCount = 20; // Reduced from 100 to 20 for better performance
     
     // Create bubble material with adjusted transparency and refraction
     const bubbleMaterial = new THREE.MeshPhysicalMaterial({
@@ -234,7 +284,7 @@ const ThreeScene = ({
     
     // Create multiple bubbles with varying sizes
     for (let i = 0; i < bubbleCount; i++) {
-      const size = THREE.MathUtils.randFloat(0.05, 0.2); // Slightly larger max size
+      const size = THREE.MathUtils.randFloat(0.05, 0.25); // Slightly larger bubbles since we have fewer
       const detail = Math.floor(size * 50) + 8; // Higher detail for larger bubbles
       const geometry = new THREE.SphereGeometry(size, detail, detail);
       
@@ -242,7 +292,7 @@ const ThreeScene = ({
       
       // Random starting positions within and around the main liquid
       // Use smaller radius to start bubbles closer to center
-      const radius = THREE.MathUtils.randFloat(0.6, 1.2);
+      const radius = THREE.MathUtils.randFloat(0.5, 1.0);
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
       
@@ -252,15 +302,16 @@ const ThreeScene = ({
       
       // Store original position and random speed
       bubble.userData.originalPos = bubble.position.clone();
-      bubble.userData.speed = THREE.MathUtils.randFloat(0.2, 0.8); // Slightly faster max speed
+      bubble.userData.speed = THREE.MathUtils.randFloat(0.3, 1.0); // Slightly faster speed range
       bubble.userData.offset = Math.random() * Math.PI * 2; // Phase offset
       bubble.userData.outwardDirection = new THREE.Vector3(
         bubble.position.x,
         bubble.position.y,
         bubble.position.z
       ).normalize();
-      bubble.userData.maxDistance = THREE.MathUtils.randFloat(1.5, 3.0); // How far bubbles can travel
+      bubble.userData.maxDistance = THREE.MathUtils.randFloat(2.0, 4.0); // Increased max distance for better visibility
       bubble.userData.initialDistance = bubble.position.length();
+      bubble.userData.timeActive = 0; // Track how long the bubble has been active
       
       group.add(bubble);
     }
@@ -282,8 +333,11 @@ const ThreeScene = ({
       const maxDistance = bubble.userData.maxDistance as number;
       const initialDistance = bubble.userData.initialDistance as number;
 
+      // Increment time active
+      bubble.userData.timeActive = (bubble.userData.timeActive || 0) + 0.016; // Roughly 60fps
+
       // Time-based movement outward
-      const outwardFactor = time * speed * 0.1;
+      const outwardFactor = bubble.userData.timeActive * speed * 0.1;
 
       // Bobbing motion - each bubble moves on its own path
       const factor = time * speed + offset;
@@ -303,22 +357,104 @@ const ThreeScene = ({
         // Reset to the original position
         bubble.position.copy(originalPos);
 
-        // Recalculate outward direction
-        bubble.userData.outwardDirection = originalPos.clone().normalize();
+        // Recalculate outward direction with slight variation for visual diversity
+        const newDirection = originalPos.clone().normalize();
+        // Add slight randomization to direction for variety
+        newDirection.x += (Math.random() - 0.5) * 0.2;
+        newDirection.y += (Math.random() - 0.5) * 0.2;
+        newDirection.z += (Math.random() - 0.5) * 0.2;
+        bubble.userData.outwardDirection = newDirection.normalize();
 
-        // Reset outward factor to restart movement
-        bubble.userData.offset = Math.random() * Math.PI * 2; // Randomize phase offset for variety
+        // Reset tracking time
+        bubble.userData.timeActive = 0;
+
+        // Randomize phase offset and speed for variety
+        bubble.userData.offset = Math.random() * Math.PI * 2;
+        bubble.userData.speed = THREE.MathUtils.randFloat(0.3, 1.0);
+        
+        // Reset opacity to full for continuous cycle
+        if (bubble.material instanceof THREE.MeshPhysicalMaterial) {
+          bubble.material.opacity = 0.6;
+          bubble.material.needsUpdate = true;
+        }
       } else {
         // Normal movement
         bubble.position.x = originalPos.x + outwardMovement.x + Math.sin(factor) * 0.1 + noise * 0.1;
         bubble.position.y = originalPos.y + outwardMovement.y + Math.sin(factor * 1.3) * 0.1 + noise * 0.1;
         bubble.position.z = originalPos.z + outwardMovement.z + Math.sin(factor * 0.7) * 0.1 + noise * 0.1;
+
+        // Fade out opacity as bubbles reach their destination
+        const normalizedDistance = outwardFactor / (maxDistance - initialDistance);
+        if (normalizedDistance > 0.7 && bubble.material instanceof THREE.MathPhysicalMaterial) {
+          // Gradually reduce opacity in the last 30% of journey
+          bubble.material.opacity = 0.6 * (1 - ((normalizedDistance - 0.7) / 0.3));
+          bubble.material.needsUpdate = true;
+        }
       }
 
       // Scale pulse effect
       const scale = 1 + Math.sin(time * 2 + i) * 0.05;
       bubble.scale.set(scale, scale, scale);
     });
+    
+    // Create new bubbles continuously to maintain a constant stream
+    if (time % 2 < 0.016 && bubblesRef.current.children.length < 20) {  // Add new bubbles roughly every 2 seconds if below count
+      addNewBubble();
+    }
+  }
+
+  // Helper function to add new bubbles to the scene
+  function addNewBubble() {
+    if (!bubblesRef.current || !meshRef.current) return;
+    
+    const color = meshRef.current.material instanceof THREE.MeshPhysicalMaterial 
+      ? meshRef.current.material.color.getHex() 
+      : 0x33C3F0;
+      
+    // Create bubble material with adjusted transparency and refraction
+    const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(color).offsetHSL(0, 0, 0.2), // Lighter version of main color
+      transparent: true,
+      opacity: 0.6,
+      metalness: 0.1,
+      roughness: 0.1,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+      transmission: 0.95,
+      ior: 1.3,
+      side: THREE.DoubleSide,
+    });
+    
+    // Create a new bubble
+    const size = THREE.MathUtils.randFloat(0.05, 0.25);
+    const detail = Math.floor(size * 50) + 8;
+    const geometry = new THREE.SphereGeometry(size, detail, detail);
+    
+    const bubble = new THREE.Mesh(geometry, bubbleMaterial);
+    
+    // Random starting position within the main liquid
+    const radius = THREE.MathUtils.randFloat(0.5, 0.8); // Start closer to center
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI;
+    
+    bubble.position.x = radius * Math.sin(phi) * Math.cos(theta);
+    bubble.position.y = radius * Math.sin(phi) * Math.sin(theta);
+    bubble.position.z = radius * Math.cos(phi);
+    
+    // Store original position and random properties
+    bubble.userData.originalPos = bubble.position.clone();
+    bubble.userData.speed = THREE.MathUtils.randFloat(0.3, 1.0);
+    bubble.userData.offset = Math.random() * Math.PI * 2;
+    bubble.userData.outwardDirection = new THREE.Vector3(
+      bubble.position.x,
+      bubble.position.y,
+      bubble.position.z
+    ).normalize();
+    bubble.userData.maxDistance = THREE.MathUtils.randFloat(2.0, 4.0);
+    bubble.userData.initialDistance = bubble.position.length();
+    bubble.userData.timeActive = 0;
+    
+    bubblesRef.current.add(bubble);
   }
 
   // Updated function to handle animation with mouse position
