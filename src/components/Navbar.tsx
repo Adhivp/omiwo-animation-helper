@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { cn } from '@/lib/utils';
 import GoldCoinDraw from './GoldCoinDraw';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -124,6 +125,8 @@ const Navbar = () => {
             <span>Win Gold Coin</span>
           </button>
           
+          <ThemeToggle />
+
           {loading ? (
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           ) : user ? (
@@ -221,6 +224,11 @@ const Navbar = () => {
           Win Gold Coin
         </button>
         
+        <div className="flex items-center justify-center my-4">
+          <ThemeToggle />
+          <span className="ml-3 text-sm text-muted-foreground">Toggle theme</span>
+        </div>
+
         {user ? (
           <>
             <Link 
