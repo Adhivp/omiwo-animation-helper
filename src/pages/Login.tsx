@@ -5,10 +5,13 @@ import ScrollReveal from '../components/ScrollReveal';
 import ThreeScene from '../components/ThreeScene';
 
 // Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create Supabase client only if environment variables are available
+const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null;
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -17,6 +20,12 @@ const Login = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    // Check if Supabase client is initialized
+    if (!supabase) {
+      setMessage({ text: 'Authentication service unavailable. Please try again later.', type: 'error' });
+      return;
+    }
+
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -50,14 +59,22 @@ const Login = () => {
 
   // Handle Google sign in
   const handleGoogleSignIn = async () => {
+    if (!supabase) {
+      setMessage({ text: 'Authentication service unavailable. Please try again later.', type: 'error' });
+      return;
+    }
+
     try {
       setLoading(true);
       setMessage({ text: '', type: '' });
       
+      // Get the site URL from environment variable or fallback to window.location.origin
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${siteUrl}/auth/callback`
         }
       });
       
