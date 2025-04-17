@@ -79,7 +79,7 @@ const AboutSection = () => {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <img 
-                  src="/public/lovable-uploads/4b03a1bc-6c22-48bf-abfb-9f89c90257d8.png" 
+                  src="/images/omiwo_logo.png" 
                   alt="OMIWO Logo" 
                   className="w-1/2 mx-auto filter drop-shadow-lg"
                   style={{

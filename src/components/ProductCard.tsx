@@ -116,7 +116,7 @@ const ProductCard = ({
         buttonBg: 'bg-gradient-to-r from-indigo-500 to-indigo-700',
         accent: 'text-red-600 dark:text-red-400', // Red OMIWO text for toilet cleaner
         hoverAccent: 'group-hover:bg-red-600',
-        productImage: 'public/images/TC_main.png' // Verified path
+        productImage: '/images/TC_main.png' // Verified path
       };
     } else if (productType === 'detergent') {
       return {
@@ -126,7 +126,7 @@ const ProductCard = ({
         buttonBg: 'bg-gradient-to-r from-blue-500 to-blue-700',
         accent: 'text-emerald-500 dark:text-emerald-400', // Green OMIWO text for detergent
         hoverAccent: 'group-hover:bg-emerald-500',
-        productImage: 'public/images/LD_main.png' // Verified path
+        productImage: '/images/LD_main.png' // Verified path
       };
     } else { // handWash
       return {
@@ -136,7 +136,7 @@ const ProductCard = ({
         buttonBg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', // Changed gradient
         accent: 'text-yellow-500 dark:text-yellow-400', // Kept as yellow
         hoverAccent: 'group-hover:bg-yellow-500', // Kept as yellow
-        productImage: 'public/images/HW_main.png' // Verified path
+        productImage: '/images/HW_main.png' // Verified path
       };
     }
   };
