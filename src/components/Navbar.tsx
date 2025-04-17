@@ -97,8 +97,8 @@ const Navbar = () => {
       className={cn(
         'fixed w-full z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-white/80 backdrop-blur-md shadow-md py-2'
-          : 'bg-transparent py-6'
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md py-2'
+          : 'bg-transparent dark:bg-transparent py-6'
       )}
     >
       <div className="container-padding flex items-center justify-between">
@@ -128,22 +128,22 @@ const Navbar = () => {
           <ThemeToggle />
 
           {loading ? (
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
           ) : user ? (
             <div className="relative group">
-              <button className="flex items-center space-x-2 py-2 px-3 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors">
+              <button className="flex items-center space-x-2 py-2 px-3 rounded-full bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
                   {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                 </div>
-                <span className="font-medium">{profile?.full_name ? profile.full_name.split(' ')[0] : 'Account'}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100">{profile?.full_name ? profile.full_name.split(' ')[0] : 'Account'}</span>
               </button>
               
               {/* Dropdown menu */}
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
-                <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">My Profile</Link>
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                <Link to="/profile" className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700">My Profile</Link>
                 <button 
                   onClick={handleSignOut}
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                  className="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                 >
                   Sign Out
                 </button>
@@ -176,7 +176,7 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'md:hidden fixed inset-0 bg-white/90 backdrop-blur-lg z-40 transition-all duration-300 ease-in-out flex flex-col justify-center items-center space-y-8 pt-16',
+          'md:hidden fixed inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg z-40 transition-all duration-300 ease-in-out flex flex-col justify-center items-center space-y-8 pt-16',
           mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
         )}
       >
@@ -233,7 +233,7 @@ const Navbar = () => {
           <>
             <Link 
               to="/profile" 
-              className="px-6 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium"
+              className="px-6 py-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               My Profile
@@ -243,7 +243,7 @@ const Navbar = () => {
                 handleSignOut();
                 setMobileMenuOpen(false);
               }}
-              className="px-6 py-2 bg-red-50 text-red-600 rounded-lg font-medium"
+              className="px-6 py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg font-medium"
             >
               Sign Out
             </button>

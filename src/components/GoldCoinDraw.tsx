@@ -93,7 +93,7 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-white rounded-xl">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-white dark:bg-gray-800 rounded-xl">
         <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-6">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-white flex items-center">
@@ -117,8 +117,8 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
             <div 
               className={`mb-6 p-4 rounded-lg text-center ${
                 message.type === 'error' 
-                  ? 'bg-red-100 text-red-800' 
-                  : 'bg-green-100 text-green-800'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' 
+                  : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
               }`}
             >
               {message.text}
@@ -127,18 +127,18 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
           
           {submitted ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500 dark:text-green-400">
                   <path d="M20 6L9 17l-5-5"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2">Entry Submitted!</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl font-bold mb-2 text-foreground">Entry Submitted!</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Thank you for participating in our Gold Coin Lucky Draw. Winners will be announced soon.
               </p>
               <Button 
                 onClick={() => onOpenChange(false)}
-                className="bg-yellow-500 hover:bg-yellow-600"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white"
               >
                 Close
               </Button>
@@ -146,7 +146,7 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-foreground">Full Name</Label>
                 <Input
                   id="name"
                   name="name"
@@ -154,12 +154,13 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                   required
                   value={formData.name}
                   onChange={handleChange}
+                  className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-foreground">Email</Label>
                   <Input
                     id="email"
                     name="email"
@@ -168,11 +169,12 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                     required
                     value={formData.email}
                     onChange={handleChange}
+                    className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-foreground">Phone Number</Label>
                   <Input
                     id="phone"
                     name="phone"
@@ -180,12 +182,13 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                     required
                     value={formData.phone}
                     onChange={handleChange}
+                    className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address" className="text-foreground">Address</Label>
                 <Textarea
                   id="address"
                   name="address"
@@ -193,12 +196,13 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                   required
                   value={formData.address}
                   onChange={handleChange}
+                  className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                 />
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
+                  <Label htmlFor="city" className="text-foreground">City</Label>
                   <Input
                     id="city"
                     name="city"
@@ -206,11 +210,12 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                     required
                     value={formData.city}
                     onChange={handleChange}
+                    className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
+                  <Label htmlFor="state" className="text-foreground">State</Label>
                   <Input
                     id="state"
                     name="state"
@@ -218,11 +223,12 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                     required
                     value={formData.state}
                     onChange={handleChange}
+                    className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                   />
                 </div>
                 
                 <div className="space-y-2 col-span-2 md:col-span-1">
-                  <Label htmlFor="pincode">Pin Code</Label>
+                  <Label htmlFor="pincode" className="text-foreground">Pin Code</Label>
                   <Input
                     id="pincode"
                     name="pincode"
@@ -230,19 +236,21 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                     required
                     value={formData.pincode}
                     onChange={handleChange}
+                    className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                   />
                 </div>
               </div>
               
               {/* Added new coupon code field */}
               <div className="space-y-2">
-                <Label htmlFor="couponCode">Coupon Code</Label>
+                <Label htmlFor="couponCode" className="text-foreground">Coupon Code</Label>
                 <Input
                   id="couponCode"
                   name="couponCode"
                   placeholder="Enter your coupon code "
                   value={formData.couponCode}
                   onChange={handleChange}
+                  className="bg-background/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600"
                 />
               </div>
               
@@ -252,7 +260,7 @@ const GoldCoinDraw = ({ open, onOpenChange }: GoldCoinDrawProps) => {
                   checked={formData.agreeToTerms}
                   onCheckedChange={handleCheckboxChange}
                 />
-                <Label htmlFor="terms" className="text-sm">
+                <Label htmlFor="terms" className="text-sm text-foreground">
                   I agree to the terms and conditions of this lucky draw
                 </Label>
               </div>
