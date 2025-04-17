@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import { cn } from '@/lib/utils';
 import GoldCoinDraw from './GoldCoinDraw';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [goldDrawOpen, setGoldDrawOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,9 +26,70 @@ const Navbar = () => {
       }
     };
 
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (!error && session) {
+        setUser(session.user);
+        
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (data) {
+            setProfile(data);
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      }
+      
+      setLoading(false);
+    };
+    
+    checkSession();
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setUser(session.user);
+        // Fetch user profile
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (data) {
+            setProfile(data);
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setProfile(null);
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <nav
@@ -31,13 +102,14 @@ const Navbar = () => {
     >
       <div className="container-padding flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="text-2xl font-bold text-gradient">OMIWO</a>
+        <a href="/" className="text-2xl font-bold text-gradient">OMIWO</a>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
-          <a href="#products" className="text-foreground/80 hover:text-foreground transition-colors">Products</a>
-          <a href="#about" className="text-foreground/80 hover:text-foreground transition-colors">About</a>
-          <a href="#contact" className="text-foreground/80 hover:text-foreground transition-colors">Contact</a>
+          <a href="/#products" className="text-foreground/80 hover:text-foreground transition-colors">Products</a>
+          <a href="/#about" className="text-foreground/80 hover:text-foreground transition-colors">About</a>
+          <a href="/#contact" className="text-foreground/80 hover:text-foreground transition-colors">Contact</a>
+          
           <button 
             onClick={() => setGoldDrawOpen(true)} 
             className="flex items-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-2 rounded-full font-medium hover:shadow-lg hover:from-yellow-500 hover:to-amber-600 transition-all transform hover:-translate-y-0.5"
@@ -48,9 +120,34 @@ const Navbar = () => {
             </svg>
             <span>Win Gold Coin</span>
           </button>
-          <a href="" className="liquid-button">
-            <span className="relative z-10">Get Started</span>
-          </a>
+          
+          {loading ? (
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          ) : user ? (
+            <div className="relative group">
+              <button className="flex items-center space-x-2 py-2 px-3 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
+                  {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                </div>
+                <span className="font-medium">{profile?.full_name ? profile.full_name.split(' ')[0] : 'Account'}</span>
+              </button>
+              
+              {/* Dropdown menu */}
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">My Profile</Link>
+                <button 
+                  onClick={handleSignOut}
+                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link to="/login" className="liquid-button">
+              <span className="relative z-10">Sign In</span>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -111,13 +208,35 @@ const Navbar = () => {
           </svg>
           Win Gold Coin
         </button>
-        <a 
-          href="" 
-          className="liquid-button mt-4"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <span className="relative z-10">Get Started</span>
-        </a>
+        
+        {user ? (
+          <>
+            <Link 
+              to="/profile" 
+              className="px-6 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              My Profile
+            </Link>
+            <button 
+              onClick={() => {
+                handleSignOut();
+                setMobileMenuOpen(false);
+              }}
+              className="px-6 py-2 bg-red-50 text-red-600 rounded-lg font-medium"
+            >
+              Sign Out
+            </button>
+          </>
+        ) : (
+          <Link 
+            to="/login" 
+            className="liquid-button mt-4"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="relative z-10">Sign In</span>
+          </Link>
+        )}
       </div>
 
       {/* Gold Coin Draw Dialog */}

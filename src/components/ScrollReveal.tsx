@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, ReactNode } from 'react';
 
 interface ScrollRevealProps {

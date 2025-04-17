@@ -8,8 +8,8 @@ const GetStarted = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
   
   // Initialize Supabase client - replace with your actual Supabase URL and anon key
-  const supabaseUrl = "https://gxwxiaqxtorxxiikfovn.supabase.co"
-  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4d3hpYXF4dG9yeHhpaWtmb3ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM3MjgyNTMsImV4cCI6MjA1OTMwNDI1M30.Y2fyJ6PfOLxlIJr0F9IDb34ONMjLLbjTO6SksotZh7Y";
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {

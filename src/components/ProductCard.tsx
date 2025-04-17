@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface ProductCardProps {
   name: string;
@@ -27,6 +33,30 @@ const ProductCard = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+      setLoading(false);
+    };
+    
+    checkAuth();
+    
+    // Subscribe to auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      setIsLoggedIn(event === 'SIGNED_IN');
+    });
+    
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, []);
 
   // Get product ID for routing
   const getProductId = () => {
@@ -70,7 +100,9 @@ const ProductCard = ({
     
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
-      card.removeEventListener('mouseleave', handleMouseLeave);
+      if (card) {
+        card.removeEventListener('mouseleave', handleMouseLeave);
+      }
     };
   }, [isHovered]);
 
@@ -127,13 +159,18 @@ const ProductCard = ({
         <div className={`px-6 py-4 ${style.bgColor} transition-colors duration-300`}>
           <h3 className={`text-2xl font-bold mb-1 ${style.textColor}`}>{name}</h3>
           <div className="flex items-center">
-            <span className={`text-sm font-bold ${style.accent} transition-colors duration-300`}>
+            <span className="text-sm font-bold">
               <span className="text-red-600">O</span>
               <span className="text-red-600">M</span>
               <span className="text-red-600">I</span>
               <span className="text-red-600">W</span>
               <span className="text-red-600">O</span>
             </span>
+            {isLoggedIn && (
+              <span className="ml-auto bg-green-100 text-green-700 text-xs py-1 px-2 rounded-full">
+                In Stock
+              </span>
+            )}
           </div>
         </div>
         
@@ -232,18 +269,36 @@ const ProductCard = ({
             )}
             {productType === 'handWash' && (
               <>
-                <span className="px-2 py-1 text-xs rounded-full bg-cyan-100 text-cyan-800">Antimicrobial</span>
-                <span className="px-2 py-1 text-xs rounded-full bg-cyan-100 text-cyan-800">Long-lasting</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Antimicrobial</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Long-lasting</span>
               </>
             )}
           </div>
           
-          <Link 
-            to={`/product/${getProductId()}`}
-            className={`w-full py-3 rounded-full text-white font-medium transition-all duration-300 ${style.buttonBg} hover:shadow-lg transform hover:-translate-y-1 block text-center`}
-          >
-            Learn More
-          </Link>
+          <div className="flex flex-col space-y-3">
+            {/* "Learn More" button that's always visible */}
+            <Link 
+              to={`/product/${getProductId()}`}
+              className={`py-3 rounded-full text-white font-medium transition-all duration-300 ${style.buttonBg} hover:shadow-lg transform hover:-translate-y-1 block text-center`}
+            >
+              Learn More
+            </Link>
+            
+            {/* "Buy Now" button that's only visible for logged-in users */}
+            {isLoggedIn && (
+              <a 
+                href={`https://wa.me/917306379513?text=Hello, I'm interested in your product: ${name}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-3 px-4 rounded-full bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 1 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                </svg>
+                Buy Now
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </ScrollReveal>
