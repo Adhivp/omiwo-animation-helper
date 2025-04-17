@@ -60,6 +60,9 @@ const ThreeScene = ({
     camera.position.z = 2.2;
     cameraRef.current = camera;
     
+    // Check for dark mode
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    
     // Create renderer with improved settings
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
@@ -70,29 +73,29 @@ const ThreeScene = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.3;
+    renderer.toneMappingExposure = isDarkMode ? 1.5 : 1.3; // Increase exposure in dark mode
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
     
-    // Enhanced lighting setup
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    // Enhanced lighting setup - adjust for dark mode
+    const ambientLight = new THREE.AmbientLight(0xffffff, isDarkMode ? 0.9 : 0.7);
     scene.add(ambientLight);
     
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, isDarkMode ? 1.4 : 1.2);
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
     // Add point lights for more dramatic effect
-    const pointLight1 = new THREE.PointLight(0xffffff, 1.8, 10);
+    const pointLight1 = new THREE.PointLight(0xffffff, isDarkMode ? 2.0 : 1.8, 10);
     pointLight1.position.set(2, 2, 2);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(0xffffff, 1.5, 10);
+    const pointLight2 = new THREE.PointLight(0xffffff, isDarkMode ? 1.7 : 1.5, 10);
     pointLight2.position.set(-2, -1, 2);
     scene.add(pointLight2);
 
     // Add a subtle colored point light based on product color
-    const colorLight = new THREE.PointLight(new THREE.Color(productColor), 1.2, 10);
+    const colorLight = new THREE.PointLight(new THREE.Color(productColor), isDarkMode ? 1.5 : 1.2, 10);
     colorLight.position.set(0, 0, 2);
     scene.add(colorLight);
     
@@ -115,19 +118,19 @@ const ThreeScene = ({
     // Store initial geometry for animation
     initialGeometryRef.current = geometry.clone();
     
-    // Create more realistic liquid material
+    // Create more realistic liquid material with dark mode adjustments
     const material = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(productColor),
       transparent: true,
-      opacity: 0.85,
-      metalness: 0.1,
+      opacity: isDarkMode ? 0.9 : 0.85,
+      metalness: isDarkMode ? 0.15 : 0.1,
       roughness: 0.2,
-      clearcoat: 0.8,
+      clearcoat: isDarkMode ? 0.9 : 0.8,
       clearcoatRoughness: 0.1,
-      transmission: 0.7,
-      reflectivity: 0.8,
+      transmission: isDarkMode ? 0.75 : 0.7,
+      reflectivity: isDarkMode ? 0.85 : 0.8,
       ior: 1.4,
-      envMapIntensity: 1.8,
+      envMapIntensity: isDarkMode ? 2.0 : 1.8,
       side: THREE.DoubleSide,
     });
     

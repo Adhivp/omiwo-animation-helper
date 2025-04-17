@@ -110,31 +110,31 @@ const ProductCard = ({
   const getProductStyle = () => {
     if (productType === 'toiletCleaner') {
       return {
-        bgColor: 'bg-indigo-50',
-        textColor: 'text-indigo-900',
-        borderColor: 'border-indigo-200',
+        bgColor: 'bg-indigo-50 dark:bg-indigo-900/30',
+        textColor: 'text-indigo-900 dark:text-indigo-100',
+        borderColor: 'border-indigo-200 dark:border-indigo-800',
         buttonBg: 'bg-gradient-to-r from-indigo-500 to-indigo-700',
-        accent: 'text-red-600', // Red OMIWO text for toilet cleaner
+        accent: 'text-red-600 dark:text-red-400', // Red OMIWO text for toilet cleaner
         hoverAccent: 'group-hover:bg-red-600',
         productImage: 'public/images/TC_main.png' // Verified path
       };
     } else if (productType === 'detergent') {
       return {
-        bgColor: 'bg-blue-50',
-        textColor: 'text-blue-900',
-        borderColor: 'border-blue-200',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/30',
+        textColor: 'text-blue-900 dark:text-blue-100',
+        borderColor: 'border-blue-200 dark:border-blue-800',
         buttonBg: 'bg-gradient-to-r from-blue-500 to-blue-700',
-        accent: 'text-emerald-500', // Green OMIWO text for detergent
+        accent: 'text-emerald-500 dark:text-emerald-400', // Green OMIWO text for detergent
         hoverAccent: 'group-hover:bg-emerald-500',
         productImage: 'public/images/LD_main.png' // Verified path
       };
     } else { // handWash
       return {
-        bgColor: 'bg-yellow-50', // Changed from cyan to yellow
-        textColor: 'text-yellow-900', // Changed from cyan to yellow
-        borderColor: 'border-yellow-200', // Changed from cyan to yellow
+        bgColor: 'bg-yellow-50 dark:bg-yellow-900/30', // Changed from cyan to yellow
+        textColor: 'text-yellow-900 dark:text-yellow-100', // Changed from cyan to yellow
+        borderColor: 'border-yellow-200 dark:border-yellow-800', // Changed from cyan to yellow
         buttonBg: 'bg-gradient-to-r from-yellow-500 to-yellow-600', // Changed gradient
-        accent: 'text-yellow-500', // Kept as yellow
+        accent: 'text-yellow-500 dark:text-yellow-400', // Kept as yellow
         hoverAccent: 'group-hover:bg-yellow-500', // Kept as yellow
         productImage: 'public/images/HW_main.png' // Verified path
       };
@@ -147,7 +147,7 @@ const ProductCard = ({
     <ScrollReveal delay={delay} className="flex-1 min-w-[300px]">
       <div 
         ref={cardRef}
-        className={`product-card h-full rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${style.borderColor} group`}
+        className={`product-card h-full rounded-xl overflow-hidden shadow-xl transition-all duration-300 ${style.borderColor} group bg-white dark:bg-card`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -160,17 +160,17 @@ const ProductCard = ({
           <h3 className={`text-2xl font-bold mb-1 ${style.textColor}`}>{name}</h3>
           <div className="flex items-center">
             <span className="text-sm font-bold">
-              <span className="text-red-600">O</span>
-              <span className="text-red-600">M</span>
-              <span className="text-red-600">I</span>
-              <span className="text-red-600">W</span>
-              <span className="text-red-600">O</span>
+              <span className="text-red-600 dark:text-red-400">O</span>
+              <span className="text-red-600 dark:text-red-400">M</span>
+              <span className="text-red-600 dark:text-red-400">I</span>
+              <span className="text-red-600 dark:text-red-400">W</span>
+              <span className="text-red-600 dark:text-red-400">O</span>
             </span>
           </div>
         </div>
         
         {/* Product Visualization with Animated Background and Product Image */}
-        <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100">
+        <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900">
           {/* Animated Liquid Background - Ensure it fills the container properly */}
           <div className="absolute inset-0 w-full h-full">
             <ThreeScene 
@@ -245,27 +245,27 @@ const ProductCard = ({
         </div>
         
         {/* Product Info */}
-        <div className="p-6 bg-white">
+        <div className="p-6 bg-white dark:bg-card">
           <p className="text-foreground/70 mb-4">{description}</p>
           
           {/* Product Features */}
           <div className="flex flex-wrap gap-2 mb-6">
             {productType === 'toiletCleaner' && (
               <>
-                <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Microbial Cleaners</span>
-                <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">Non-abrasive</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200">Microbial Cleaners</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200">Non-abrasive</span>
               </>
             )}
             {productType === 'detergent' && (
               <>
-                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Color-safe</span>
-                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">99.9% germ defense</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">Color-safe</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">99.9% germ defense</span>
               </>
             )}
             {productType === 'handWash' && (
               <>
-                <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Antimicrobial</span>
-                <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Long-lasting</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200">Antimicrobial</span>
+                <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200">Long-lasting</span>
               </>
             )}
           </div>

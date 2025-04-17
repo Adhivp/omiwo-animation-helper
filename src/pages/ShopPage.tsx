@@ -222,11 +222,11 @@ const ShopPage = () => {
   return (
     <>
       <Navbar />
-      <main className="pt-24 pb-16 min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <main className="pt-24 pb-16 min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-background dark:to-background/70">
         <div className="container-padding">
           <ScrollReveal>
             <div className="text-center mb-8">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">OMIWO Shop</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">OMIWO Shop</h1>
               <p className="text-foreground/70 max-w-2xl mx-auto">
                 Browse our full range of premium liquid cleaning products designed for your home and family.
               </p>
@@ -234,15 +234,15 @@ const ShopPage = () => {
           </ScrollReveal>
           
           {/* Tab Navigation */}
-          <div className="flex justify-center mb-8 border-b border-gray-200">
+          <div className="flex justify-center mb-8 border-b border-gray-200 dark:border-gray-800">
             <button 
-              className={`px-6 py-3 font-medium text-lg ${activeTab === 'main' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-6 py-3 font-medium text-lg ${activeTab === 'main' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
               onClick={() => setActiveTab('main')}
             >
               Main Products
             </button>
             <button 
-              className={`px-6 py-3 font-medium text-lg ${activeTab === 'combo' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-6 py-3 font-medium text-lg ${activeTab === 'combo' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
               onClick={() => setActiveTab('combo')}
             >
               Combo Packs
@@ -254,8 +254,8 @@ const ShopPage = () => {
             <>
               <ScrollReveal delay={100}>
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold mb-2">Individual Products</h2>
-                  <p className="text-gray-600">Minimum order value: ₹100</p>
+                  <h2 className="text-2xl font-bold mb-2 text-foreground">Individual Products</h2>
+                  <p className="text-gray-600 dark:text-gray-400">Minimum order value: ₹100</p>
                 </div>
               </ScrollReveal>
               
@@ -263,11 +263,11 @@ const ShopPage = () => {
                 {mainProducts.map((product) => (
                   <ScrollReveal key={product.id}>
                     <div 
-                      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow"
+                      className="bg-white dark:bg-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow"
                       onMouseEnter={() => handleProductHover(product.id)}
                       onMouseLeave={() => handleProductHover(null)}
                     >
-                      <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100">
+                      <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900">
                         {/* Animated Background */}
                         <div className="absolute inset-0">
                           <ThreeScene 
@@ -293,8 +293,8 @@ const ShopPage = () => {
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                        <p className="text-gray-600 mb-4">{product.description}</p>
+                        <h3 className="text-xl font-bold mb-2 text-foreground">{product.name}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">{product.description}</p>
                         
                         <div className="flex justify-between items-center mb-4">
                           <div>
@@ -326,8 +326,8 @@ const ShopPage = () => {
             <>
               <ScrollReveal delay={100}>
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold mb-2">Combo Packages</h2>
-                  <p className="text-gray-600">Save more with our special combination packs</p>
+                  <h2 className="text-2xl font-bold mb-2 text-foreground">Combo Packages</h2>
+                  <p className="text-gray-600 dark:text-gray-400">Save more with our special combination packs</p>
                 </div>
               </ScrollReveal>
               
@@ -335,11 +335,11 @@ const ShopPage = () => {
                 {comboProducts.map((product) => (
                   <ScrollReveal key={product.id}>
                     <div 
-                      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow"
+                      className="bg-white dark:bg-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow"
                       onMouseEnter={() => handleProductHover(product.id)}
                       onMouseLeave={() => handleProductHover(null)}
                     >
-                      <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100">
+                      <div className="relative h-60 overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900">
                         {/* Product Image (no animation for combo packs) */}
                         <div className="relative z-10 h-full flex items-center justify-center bg-gray-50">
                           <img 
@@ -351,8 +351,8 @@ const ShopPage = () => {
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                        <p className="text-gray-600 mb-2">{product.comboItems}</p>
+                        <h3 className="text-xl font-bold mb-2 text-foreground">{product.name}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-2">{product.comboItems}</p>
                         
                         <div className="flex justify-between items-center mb-4">
                           <div className="text-2xl font-bold">₹{product.price}</div>

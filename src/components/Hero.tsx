@@ -139,10 +139,10 @@ const Hero = () => {
         ))}
       </div>
       
-      {/* Darker Overlay with gradient */}
-      <div className="absolute inset-0 z-0 bg-gradient-radial from-transparent via-black/30 to-blue-900/50"></div>
+      {/* Darker Overlay with gradient - adjusted for dark mode */}
+      <div className="absolute inset-0 z-0 bg-gradient-radial from-transparent via-black/30 dark:via-black/50 to-blue-900/50 dark:to-blue-900/70"></div>
       
-      {/* Content with enhanced text visibility */}
+      {/* Content with enhanced text visibility for dark mode */}
       <div
         ref={textRef}
         className="relative z-10 text-center px-4 transition-all duration-300 max-w-screen-xl mx-auto"
@@ -152,13 +152,13 @@ const Hero = () => {
         }}
       >
         <ScrollReveal delay={200}>
-          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white leading-tight drop-shadow-[0_4px_14px_rgba(0,0,0,1)]">
+          <h2 className="text-4xl md:text-7xl font-bold mb-4 md:mb-8 text-white dark:text-white leading-tight drop-shadow-[0_4px_14px_rgba(0,0,0,1)]">
             Elevate Your Clean<br />With Premium Liquids
           </h2>
         </ScrollReveal>
         
         <ScrollReveal delay={400}>
-          <p className="text-base md:text-xl text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_4px_14px_rgba(0,0,0,1)]">
+          <p className="text-base md:text-xl text-white dark:text-white max-w-2xl mx-auto mb-8 md:mb-12 drop-shadow-[0_4px_14px_rgba(0,0,0,1)]">
             Premium quality liquid cleaning products designed to transform your cleaning experience with elegance and effectiveness.
           </p>
         </ScrollReveal>
