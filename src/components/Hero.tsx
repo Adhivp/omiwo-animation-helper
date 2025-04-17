@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import ThreeScene from './ThreeScene';
 import ScrollReveal from './ScrollReveal';
 import GoldCoinDraw from './GoldCoinDraw';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Hero = () => {
   const textRef = useRef<HTMLDivElement>(null);
@@ -10,6 +17,7 @@ const Hero = () => {
   const [prevMousePosition, setPrevMousePosition] = useState({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const [goldDrawOpen, setGoldDrawOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Add state for login status
 
   useEffect(() => {
     // Initial viewport size
@@ -55,6 +63,14 @@ const Hero = () => {
     };
     
     const initialAnimationId = setInterval(animateInitial, 16);
+
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    
+    checkAuth();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -149,10 +165,15 @@ const Hero = () => {
         
         <ScrollReveal delay={600}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="liquid-button group relative overflow-hidden bg-blue-600 hover:bg-blue-700 shadow-lg">
-              <span className="relative z-10 text-white transition-colors font-medium px-6 py-3">Explore Collection</span>
+            <Link 
+              to="/login" 
+              className="liquid-button group relative overflow-hidden bg-blue-600 hover:bg-blue-700 shadow-lg inline-block"
+            >
+              <span className="relative z-10 text-white transition-colors font-medium px-6 py-3">
+                {isLoggedIn ? "Explore Collection" : "Sign In to Explore"}
+              </span>
               <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </button>
+            </Link>
             <a 
               href="#products" 
               className="inline-flex items-center text-white font-medium hover:text-blue-300 transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,1)]"

@@ -4,26 +4,35 @@ import { useNavigate } from 'react-router-dom';
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processingComplete, setProcessingComplete] = useState(false);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Log to help with debugging
+        console.log("Starting auth callback processing");
+        
         // Get the session from the URL
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
+          console.error("Session error:", sessionError);
           throw sessionError;
         }
 
         if (!session) {
+          console.error("No session found");
           throw new Error('No session found');
         }
+
+        console.log("Found active session, checking for profile");
 
         // Check if user profile exists
         const { data: profile, error: profileError } = await supabase
@@ -32,29 +41,40 @@ const AuthCallback = () => {
           .eq('id', session.user.id)
           .single();
           
-        if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is the code for "no rows returned"
+        // Handle true errors (not "no rows returned")
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error("Profile error:", profileError);
           throw profileError;
         }
 
+        setProcessingComplete(true);
+        
         // Redirect based on whether user has a profile
         if (profile) {
-          navigate('/profile'); // Existing user
+          console.log("Profile found, redirecting to shop");
+          navigate('/shop');
         } else {
-          navigate('/setup'); // New user
+          console.log("No profile found, redirecting to setup");
+          navigate('/setup');
         }
       } catch (error) {
         console.error('Error during auth callback:', error);
         setError('Authentication failed. Please try again.');
+        setProcessingComplete(true);
         
         // Redirect to login after a delay
         setTimeout(() => {
           navigate('/login');
         }, 3000);
+      } finally {
+        setLoading(false);
       }
     };
 
-    handleAuthCallback();
-  }, [navigate]);
+    if (!processingComplete) {
+      handleAuthCallback();
+    }
+  }, [navigate, processingComplete]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50">

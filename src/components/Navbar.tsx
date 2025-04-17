@@ -107,6 +107,9 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
           <a href="/#products" className="text-foreground/80 hover:text-foreground transition-colors">Products</a>
+          {user && (
+            <Link to="/shop" className="text-foreground/80 hover:text-foreground transition-colors">Shop</Link>
+          )}
           <a href="/#about" className="text-foreground/80 hover:text-foreground transition-colors">About</a>
           <a href="/#contact" className="text-foreground/80 hover:text-foreground transition-colors">Contact</a>
           
@@ -181,6 +184,15 @@ const Navbar = () => {
         >
           Products
         </a>
+        {user && (
+          <Link 
+            to="/shop" 
+            className="text-xl font-medium text-foreground"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Shop
+          </Link>
+        )}
         <a 
           href="#about" 
           className="text-xl font-medium text-foreground"

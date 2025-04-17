@@ -5,42 +5,42 @@ import ScrollReveal from '../components/ScrollReveal';
 import ThreeScene from '../components/ThreeScene';
 
 // Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Create Supabase client only if environment variables are available
-const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
-  : null;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Check if Supabase client is initialized
-    if (!supabase) {
-      setMessage({ text: 'Authentication service unavailable. Please try again later.', type: 'error' });
-      return;
-    }
-
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (session) {
+        setIsAuthenticated(true);
+        
         // Check if user profile exists
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          navigate('/profile'); // User exists, go to profile
-        } else {
-          navigate('/setup'); // New user, go to setup
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          // If the user has a profile, redirect to shop
+          if (profile) {
+            navigate('/shop');
+          } else {
+            // If no profile, redirect to setup
+            navigate('/setup');
+          }
+        } catch (error) {
+          console.error('Error checking profile:', error);
         }
       }
     };
@@ -59,11 +59,6 @@ const Login = () => {
 
   // Handle Google sign in
   const handleGoogleSignIn = async () => {
-    if (!supabase) {
-      setMessage({ text: 'Authentication service unavailable. Please try again later.', type: 'error' });
-      return;
-    }
-
     try {
       setLoading(true);
       setMessage({ text: '', type: '' });
@@ -81,13 +76,25 @@ const Login = () => {
       if (error) {
         setMessage({ text: error.message, type: 'error' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in with Google:', error);
       setMessage({ text: 'An unexpected error occurred', type: 'error' });
     } finally {
       setLoading(false);
     }
   };
+
+  // If already authenticated but waiting for redirect
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting you...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-b from-white to-gray-50">

@@ -1,8 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import ScrollReveal from './ScrollReveal';
 import ProductCard from './ProductCard';
 
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 const ProductShowcase = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    
+    checkAuth();
+  }, []);
+  
   const products = [
     {
       name: 'Premium Toilet Cleaner',
@@ -62,9 +80,9 @@ const ProductShowcase = () => {
         {/* Call to Action */}
         <ScrollReveal delay={600}>
           <div className="mt-16 text-center">
-            <button className="liquid-button">
-              <span className="relative z-10">View All Products</span>
-            </button>
+            <Link to="/login" className="liquid-button">
+              <span className="relative z-10">Sign In to Shop</span>
+            </Link>
           </div>
         </ScrollReveal>
       </div>
