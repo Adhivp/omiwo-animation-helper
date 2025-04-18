@@ -87,17 +87,17 @@ const Login = () => {
   // If already authenticated but waiting for redirect
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting you...</p>
+          <p className="text-foreground/80">Redirecting you...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {/* Animated Background */}
       <div className="absolute inset-0 z-0">
         <ThreeScene 
@@ -108,10 +108,10 @@ const Login = () => {
       </div>
       
       {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-white/70 z-0"></div>
+      <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 z-0"></div>
       
       {/* Login Card */}
-      <div className="relative z-10 bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
+      <div className="relative z-10 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-8 text-center">
           <ScrollReveal>
             <h1 className="text-3xl font-bold text-white">Welcome to OMIWO</h1>
@@ -121,7 +121,11 @@ const Login = () => {
         
         <div className="p-8">
           {message.text && (
-            <div className={`mb-6 p-4 rounded-lg text-center ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+            <div className={`mb-6 p-4 rounded-lg text-center ${
+              message.type === 'error' 
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' 
+                : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+            }`}>
               {message.text}
             </div>
           )}
@@ -130,7 +134,7 @@ const Login = () => {
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="flex items-center justify-center w-full py-3 px-4 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-gray-700 font-medium"
+              className="flex items-center justify-center w-full py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-gray-700 dark:text-gray-100 font-medium"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -155,10 +159,10 @@ const Login = () => {
           </ScrollReveal>
           
           <ScrollReveal delay={200}>
-            <p className="mt-8 text-center text-sm text-gray-500">
+            <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
               By continuing, you agree to OMIWO's{' '}
-              <a href="#" className="text-blue-600 hover:underline">Terms of Service</a> and{' '}
-              <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
+              <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">Terms of Service</a> and{' '}
+              <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</a>
             </p>
           </ScrollReveal>
         </div>
