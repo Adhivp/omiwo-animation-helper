@@ -63,13 +63,13 @@ const Login = () => {
       setLoading(true);
       setMessage({ text: '', type: '' });
       
-      // Get the site URL from environment variable or fallback to window.location.origin
-      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+      // Get the current URL dynamically based on environment
+      const redirectUrl = window.location.origin + "/auth/callback";
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${siteUrl}/auth/callback`
+          redirectTo: redirectUrl
         }
       });
       
