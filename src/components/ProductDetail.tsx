@@ -1,10 +1,26 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import ScrollReveal from './ScrollReveal';
 import ThreeScene from './ThreeScene';
-import { createClient } from '@supabase/supabase-js';
+import ScrollReveal from './ScrollReveal';
+import { Button } from '@/components/ui/button';
+import { 
+  Card,
+  CardContent,
+  CardDescription,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/components/ui/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { CheckCircle, Info, TrendingUp, ShieldCheck } from 'lucide-react';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface ProductDataType {
   id: string;
@@ -18,6 +34,17 @@ interface ProductDataType {
   color: string;
   productType: 'toiletCleaner' | 'detergent' | 'handWash';
   features: { icon: string; title: string; description: string }[];
+}
+
+interface ComboProductType {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  combo_items: string;
+  is_combo: boolean;
+  color?: string;
 }
 
 const productsData: Record<string, ProductDataType> = {
@@ -128,28 +155,163 @@ const productsData: Record<string, ProductDataType> = {
   }
 };
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const comboProductsData: Record<string, ComboProductType> = {
+  'combo-1': {
+    id: 'combo-1',
+    name: '2 TC + 2 LD + 5 HW',
+    description: 'Complete cleaning package with Toilet Cleaner, Liquid Detergent, and Hand Wash.',
+    price: 2*10 + 2*10 + 5*2, // 2 TC + 2 LD + 5 HW = 50
+    image_url: '/images/2 TC 2 LD 5  HW.jpg',
+    combo_items: '2 Toilet Cleaners + 2 Liquid Detergents + 5 Hand Wash',
+    is_combo: true,
+    color: '#4f46e5'
+  },
+  'combo-2': {
+    id: 'combo-2',
+    name: '5 TC + 5 LD + 10 HW',
+    description: 'Complete family cleaning package with multiple units of all products.',
+    price: 5*10 + 5*10 + 10*2, // 5 TC + 5 LD + 10 HW = 120
+    image_url: '/images/5 TC 5 LD  10  HW.jpg',
+    combo_items: '5 Toilet Cleaners + 5 Liquid Detergents + 10 Hand Wash',
+    is_combo: true,
+    color: '#4f46e5'
+  },
+  'combo-3': {
+    id: 'combo-3',
+    name: '5 TC + 5 LD',
+    description: 'Complete cleaning package with multiple Toilet Cleaners and Liquid Detergents.',
+    price: 5*10 + 5*10, // 5 TC + 5 LD = 100
+    image_url: '/images/5 TC 5 LD.jpg',
+    combo_items: '5 Toilet Cleaners + 5 Liquid Detergents',
+    is_combo: true,
+    color: '#4f46e5'
+  },
+  'combo-4': {
+    id: 'combo-4',
+    name: '8 TC + 8 LD + 20 HW',
+    description: 'Large family pack with multiple units of all cleaning products.',
+    price: 8*10 + 8*10 + 20*2, // 8 TC + 8 LD + 20 HW = 200
+    image_url: '/images/8 TC 8 LD 20 HW.jpg',
+    combo_items: '8 Toilet Cleaners + 8 Liquid Detergents + 20 Hand Wash',
+    is_combo: true,
+    color: '#4f46e5'
+  },
+  'combo-5': {
+    id: 'combo-5',
+    name: '10 Liquid Detergent',
+    description: 'Bulk pack of our premium Liquid Detergent.',
+    price: 10*10, // 10 LD = 100
+    image_url: '/images/10 LD (1).jpg',
+    combo_items: '10 Liquid Detergents',
+    is_combo: true,
+    color: '#3b82f6'
+  },
+  'combo-6': {
+    id: 'combo-6',
+    name: '10 Toilet Cleaner',
+    description: 'Bulk pack of our premium Toilet Cleaner.',
+    price: 10*10, // 10 TC = 100
+    image_url: '/images/10 TC (1).jpg',
+    combo_items: '10 Toilet Cleaners',
+    is_combo: true,
+    color: '#1e3a8a'
+  },
+  'combo-7': {
+    id: 'combo-7',
+    name: '10 TC + 10 LD',
+    description: 'Large bundle of Toilet Cleaners and Liquid Detergents.',
+    price: 10*10 + 10*10, // 10 TC + 10 LD = 200
+    image_url: '/images/10 TC 10 LD.jpg',
+    combo_items: '10 Toilet Cleaners + 10 Liquid Detergents',
+    is_combo: true,
+    color: '#4f46e5'
+  },
+  'combo-8': {
+    id: 'combo-8',
+    name: '25 Hand Wash',
+    description: 'Bulk pack of our premium Hand Wash.',
+    price: 25*2, // 25 HW = 50
+    image_url: '/images/25 HW (1).jpg',
+    combo_items: '25 Hand Wash bottles',
+    is_combo: true,
+    color: '#eab308'
+  }
+};
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [product, setProduct] = useState<ProductDataType | null>(null);
+  const [comboProduct, setComboProduct] = useState<ComboProductType | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const productImageRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulate loading data
     setIsLoading(true);
-    setTimeout(() => {
-      if (productId && productsData[productId]) {
-        setProduct(productsData[productId]);
+    
+    const fetchProductDetails = async () => {
+      try {
+        if (!productId) return;
+        
+        // Check if it's a regular product
+        if (productId in productsData) {
+          setProduct(productsData[productId]);
+          setComboProduct(null);
+        } 
+        // Check if it's a combo product
+        else if (productId in comboProductsData) {
+          setProduct(null);
+          setComboProduct(comboProductsData[productId]);
+        }
+        // Product not found
+        else {
+          setProduct(null);
+          setComboProduct(null);
+        }
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+        setProduct(null);
+        setComboProduct(null);
+      } finally {
+        // Delay slightly for better UX
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 800);
       }
-      setIsLoading(false);
-    }, 500);
+    };
 
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setIsLoggedIn(true);
+        setUser(session.user);
+        
+        // Fetch user profile
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (data) {
+            setUserProfile(data);
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+    
     const handleMouseMove = (e: MouseEvent) => {
       if (productImageRef.current) {
         const rect = productImageRef.current.getBoundingClientRect();
@@ -159,63 +321,196 @@ const ProductDetail = () => {
         setMousePosition({ x, y });
       }
     };
-
+    
+    checkAuth();
+    fetchProductDetails();
     window.addEventListener('mousemove', handleMouseMove);
+    
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [productId]);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session);
-    };
-    
-    checkAuth();
-    
-    // Subscribe to auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      setIsLoggedIn(event === 'SIGNED_IN');
-    });
-    
-    return () => {
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
-  }, []);
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setQuantity(value);
+    }
+  };
+
+  const calculateTotalPrice = () => {
+    if (product) {
+      return 10 * quantity; // Assume regular products are 10 each
+    } else if (comboProduct) {
+      return comboProduct.price * quantity;
+    }
+    return 0;
+  };
+
+  // Handle buy now button
+  const handleBuyNow = async () => {
+    if ((!product && !comboProduct) || !user) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setIsProcessingPayment(true);
+      
+      const productName = product ? product.name : comboProduct ? comboProduct.name : '';
+      const productPrice = product ? 10 : comboProduct ? comboProduct.price : 0;
+      const isCombo = !!comboProduct;
+      
+      // Create an order in our database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([
+          {
+            user_id: user.id,
+            product_id: productId,
+            product_name: productName,
+            quantity: quantity,
+            unit_price: productPrice,
+            total_amount: productPrice * quantity,
+            status: 'pending',
+            is_combo: isCombo,
+            shipping_address: `${userProfile?.address_line1}, ${userProfile?.city}, ${userProfile?.state}, ${userProfile?.postal_code}`,
+            phone: userProfile?.phone
+          }
+        ])
+        .select()
+        .single();
+        
+      if (orderError) throw orderError;
+      
+      if (!order) throw new Error("Failed to create order");
+      
+      // Initialize Razorpay
+      // This should be replaced with your actual Razorpay implementation
+      toast({
+        title: "Order created successfully",
+        description: "Opening Razorpay payment window...",
+        variant: "default"
+      });
+      
+      // Simulate successful payment for demo
+      setTimeout(() => {
+        toast({
+          title: "Payment Successful",
+          description: "Your order has been placed successfully!",
+          variant: "default"
+        });
+        navigate(`/order-confirmation/${order.id}`);
+        setIsProcessingPayment(false);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem processing your order. Please try again.",
+        variant: "destructive"
+      });
+      setIsProcessingPayment(false);
+    }
+  };
+
+  // Custom Liquid Loading Component
+  const LiquidLoading = () => (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="relative h-32 w-32 mb-6">
+        <div className="absolute inset-0 rounded-full bg-blue-500 dark:bg-blue-600 opacity-20 animate-ping"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="h-20 w-20 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center p-4 shadow-lg">
+            <img 
+              src="/images/omiwo_logo.png" 
+              alt="OMIWO Logo" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+        <div className="absolute inset-x-0 -bottom-4 h-4 bg-gradient-to-r from-blue-400 to-cyan-400 animate-liquidwave rounded-full"></div>
+      </div>
+      <p className="text-blue-600 dark:text-blue-400 font-medium animate-pulse">Loading product details...</p>
+    </div>
+  );
+
+  // Product Not Found Component
+  const ProductNotFound = () => (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="relative h-32 w-32 mb-6">
+        <div className="h-full w-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+          <div className="h-1/2 w-full bg-gray-300 dark:bg-gray-600 absolute top-1/2" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Info className="h-12 w-12 text-gray-500 dark:text-gray-400" />
+          </div>
+        </div>
+      </div>
+      <h2 className="text-2xl font-bold mb-4 text-foreground">Product Not Found</h2>
+      <p className="mb-6 text-center text-muted-foreground">
+        The product you are looking for doesn't exist or has been removed.
+      </p>
+      <Link to="/shop">
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          Browse Our Products
+        </Button>
+      </Link>
+    </div>
+  );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-omiwo-blue"></div>
-      </div>
+      <>
+        <Navbar />
+        <LiquidLoading />
+        <Footer />
+      </>
     );
   }
 
-  if (!product) {
+  if (!product && !comboProduct) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
-        <p className="mb-6">The product you are looking for doesn't exist or has been removed.</p>
-        <Link 
-          to="/#products" 
-          className="liquid-button"
-        >
-          <span className="relative z-10">Back to Products</span>
-        </Link>
-      </div>
+      <>
+        <Navbar />
+        <ProductNotFound />
+        <Footer />
+      </>
     );
   }
+
+  // Get product color for ThreeScene
+  const getProductColor = () => {
+    if (product) {
+      return product.color;
+    } else if (comboProduct) {
+      return comboProduct.color || '#4f46e5';
+    }
+    return '#3b82f6';
+  };
+
+  // Get product type for ThreeScene
+  const getProductType = (): 'toiletCleaner' | 'detergent' | 'handWash' => {
+    if (product) {
+      return product.productType;
+    } else if (comboProduct) {
+      if (comboProduct.combo_items.toLowerCase().includes('toilet')) {
+        return 'toiletCleaner';
+      } else if (comboProduct.combo_items.toLowerCase().includes('detergent')) {
+        return 'detergent';
+      } else {
+        return 'handWash';
+      }
+    }
+    return 'detergent'; // Default
+  };
 
   return (
     <>
       <Navbar />
       <main className="pt-24 pb-16">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50">
+        <section className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
           <div className="container-padding py-12 md:py-20">
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              {/* Product Image with Animation */}
+              {/* Product Image with Animation - Show 3D only for regular products */}
               <ScrollReveal>
                 <div 
                   ref={productImageRef}
@@ -224,110 +519,167 @@ const ProductDetail = () => {
                     perspective: '1000px'
                   }}
                 >
-                  {/* Animated liquid background */}
-                  <div className="absolute inset-0 z-0">
-                    <ThreeScene 
-                      animationType="bubble" 
-                      productType={product.productType}
-                      color={product.color}
-                      mousePosition={mousePosition}
-                      isHovered={true}
-                    />
-                  </div>
+                  {/* Show 3D background only for regular products */}
+                  {product && (
+                    <div className="absolute inset-0 z-0">
+                      <ThreeScene 
+                        animationType="bubble" 
+                        productType={getProductType()}
+                        color={getProductColor()}
+                        mousePosition={mousePosition}
+                        isHovered={true}
+                      />
+                    </div>
+                  )}
                   
-                  {/* Product image */}
+                  {/* For combo products, use a clean background with no effects */}
+                  {comboProduct && (
+                    <div className="absolute inset-0 z-0 bg-white dark:bg-gray-800"></div>
+                  )}
+                  
                   <div className="absolute inset-0 flex items-center justify-center z-10">
                     <img 
-                      src={product.imageSrc}
-                      alt={product.name}
-                      className="h-[80%] w-auto object-contain transform transition-transform duration-300"
-                      style={{
-                        filter: 'drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2))',
-                        transform: `translateX(${mousePosition.x * 20}px) translateY(${mousePosition.y * 20}px) rotateY(${mousePosition.x * 5}deg) rotateX(${-mousePosition.y * 5}deg)`
-                      }}
+                      src={product ? product.imageSrc : comboProduct ? comboProduct.image_url : ''}
+                      alt={product ? product.name : comboProduct ? comboProduct.name : ''}
+                      className={`${comboProduct ? 'h-auto max-h-[90%] max-w-[90%]' : 'h-[80%]'} w-auto object-contain ${!comboProduct && 'transform transition-transform duration-300'}`}
+                      style={
+                        product ? {
+                          filter: 'drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2))',
+                          transform: `translateX(${mousePosition.x * 20}px) translateY(${mousePosition.y * 20}px) rotateY(${mousePosition.x * 5}deg) rotateX(${-mousePosition.y * 5}deg)`
+                        } : {
+                          filter: 'drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2))'
+                        }
+                      }
                     />
                   </div>
-                  
-                  {/* Glare effect */}
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"
-                    style={{
-                      transform: `translateX(${-mousePosition.x * 50}px) translateY(${-mousePosition.y * 50}px)`,
-                      opacity: 0.6
-                    }}
-                  ></div>
                 </div>
               </ScrollReveal>
               
-              {/* Product Info */}
+              {/* Rest of the product info section remains unchanged */}
               <div>
                 <ScrollReveal>
                   <div className="flex items-center mb-2">
-                    <Link to="/#products" className="text-sm font-medium text-blue-600 hover:underline flex items-center">
+                    <Link to="/shop" className="text-blue-600 hover:text-blue-800 flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                       </svg>
-                      All Products
+                      Back to Products
                     </Link>
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-bold mb-3">{product.name}</h1>
-                  <h2 className="text-xl text-gray-600 mb-6">{product.tagline}</h2>
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                    {product ? product.name : comboProduct ? comboProduct.name : ''}
+                  </h1>
+                  <p className="text-xl mt-2 text-foreground/80 font-light">
+                    {product ? product.tagline : comboProduct ? comboProduct.description : ''}
+                  </p>
                 </ScrollReveal>
                 
                 <ScrollReveal delay={200}>
-                  <p className="text-foreground/70 mb-8">{product.fullDescription}</p>
-                </ScrollReveal>
-                
-                <ScrollReveal delay={300}>
-                  <div className="mb-8">
-                    <h3 className="font-bold mb-3">Key Benefits</h3>
-                    <ul className="space-y-2">
-                      {product.benefits.map((benefit, index) => (
-                        <li key={index} className="flex items-start">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  {comboProduct && (
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                      <h3 className="text-lg font-medium text-blue-700 dark:text-blue-300">Combo Contents:</h3>
+                      <p className="text-blue-600 dark:text-blue-200">{comboProduct.combo_items}</p>
+                    </div>
+                  )}
+                  
+                  <div className="mt-6">
+                    <div className="flex items-end mb-4">
+                      <span className="text-3xl font-bold text-foreground">₹{product ? 10 : comboProduct ? comboProduct.price : 0}</span>
+                      <span className="text-lg text-foreground/70 ml-2">per unit</span>
+                    </div>
+
+                    <p className="text-foreground/80 mb-6">
+                      {product ? product.fullDescription : 'Premium combination pack offering excellent value. Get all the cleaning products you need in one convenient package.'}
+                    </p>
                   </div>
                 </ScrollReveal>
                 
+                <ScrollReveal delay={300}>
+                  <Card className="mb-6 bg-card/60 backdrop-blur-sm border border-border">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="quantity" className="block text-sm font-medium text-foreground mb-1">
+                            Quantity
+                          </label>
+                          <div className="flex items-center">
+                            <Input
+                              id="quantity"
+                              type="number"
+                              min="1"
+                              value={quantity}
+                              onChange={handleQuantityChange}
+                              className="w-20 mr-4"
+                            />
+                            <span className="text-foreground/70">
+                              Total: <span className="font-bold text-primary">₹{calculateTotalPrice()}</span>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-4 pt-2">
+                          <Button
+                            onClick={handleBuyNow}
+                            disabled={isProcessingPayment}
+                            className="bg-blue-600 hover:bg-blue-700 flex-1"
+                          >
+                            {isProcessingPayment ? 'Processing...' : 'Buy Now'}
+                          </Button>
+                        </div>
+
+                        {!isLoggedIn && (
+                          <p className="text-amber-600 dark:text-amber-400 text-sm">
+                            <Info className="inline h-4 w-4 mr-1" />
+                            Sign in required to complete your purchase
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </ScrollReveal>
+                
                 <ScrollReveal delay={400}>
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {product.ingredients.map((ingredient, index) => (
-                      <span 
-                        key={index} 
-                        className="px-3 py-1 bg-blue-50 text-blue-800 rounded-full text-sm font-medium"
-                      >
-                        {ingredient}
-                      </span>
-                    ))}
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      In Stock
+                    </Badge>
+                    <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      Best Seller
+                    </Badge>
+                    <Badge variant="outline" className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800">
+                      <ShieldCheck className="h-3 w-3 mr-1" />
+                      Quality Assured
+                    </Badge>
                   </div>
                 </ScrollReveal>
                 
                 <ScrollReveal delay={500}>
-                  <div className="space-y-4">
-                    <a 
-                      href={`https://wa.me/917306379513?text=Hello, I'm interested in your product: ${product.name}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center py-3 px-4 rounded-full bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" className="mr-2">
-                        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-                      </svg>
-                      Buy Now
-                    </a>
-
-                    <div className="pt-4 border-t border-gray-100">
-                      <p className="text-amber-600 font-medium">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  <div className="mt-6 grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        Minimum order value: ₹100
-                      </p>
+                      </div>
+                      <p className="text-xs text-foreground/70">Premium Quality</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <p className="text-xs text-foreground/70">Fast Delivery</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mx-auto mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <p className="text-xs text-foreground/70">Secure Payment</p>
                     </div>
                   </div>
                 </ScrollReveal>
@@ -336,93 +688,207 @@ const ProductDetail = () => {
           </div>
         </section>
         
-        {/* Features Section */}
-        <section className="py-16 bg-white">
-          <div className="container-padding">
-            <ScrollReveal>
-              <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
-            </ScrollReveal>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {product.features.map((feature, index) => (
-                <ScrollReveal key={index} delay={index * 200}>
-                  <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-                    <div className="text-3xl mb-4">{feature.icon}</div>
-                    <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </div>
+        {/* Product Details */}
+        {product && (
+          <>
+            {/* Features Section */}
+            <section className="py-16 bg-white dark:bg-gray-900">
+              <div className="container-padding">
+                <ScrollReveal>
+                  <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Key Features</h2>
                 </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-        
-        {/* Usage Instructions */}
-        <section className="py-16 bg-gray-50">
-          <div className="container-padding">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <ScrollReveal>
-                <div>
-                  <h2 className="text-3xl font-bold mb-6">How to Use</h2>
-                  <p className="text-gray-600 mb-6">{product.usage}</p>
-                  <div className="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-r">
-                    <p className="text-sm text-yellow-800">
-                      For best results, follow the usage instructions carefully. Contact us if you have any questions about this product.
-                    </p>
-                  </div>
+                
+                <div className="grid md:grid-cols-3 gap-8">
+                  {product.features.map((feature, index) => (
+                    <ScrollReveal key={index} delay={index * 200}>
+                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700">
+                        <div className="text-3xl mb-4">{feature.icon}</div>
+                        <h3 className="text-lg font-bold mb-2 text-foreground">{feature.title}</h3>
+                        <p className="text-foreground/70">{feature.description}</p>
+                      </div>
+                    </ScrollReveal>
+                  ))}
                 </div>
+              </div>
+            </section>
+            
+            {/* Ingredients & Benefits */}
+            <section className="py-16 bg-gray-50 dark:bg-gray-800/50">
+              <div className="container-padding">
+                <div className="grid md:grid-cols-2 gap-12">
+                  <ScrollReveal>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-6 text-foreground">Ingredients</h3>
+                      <ul className="space-y-3">
+                        {product.ingredients.map((ingredient, index) => (
+                          <li key={index} className="flex items-start">
+                            <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mr-3 mt-0.5">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <span className="text-foreground">{ingredient}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </ScrollReveal>
+                  
+                  <ScrollReveal delay={200}>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-6 text-foreground">Benefits</h3>
+                      <ul className="space-y-3">
+                        {product.benefits.map((benefit, index) => (
+                          <li key={index} className="flex items-start">
+                            <div className="h-6 w-6 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center mr-3 mt-0.5">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <span className="text-foreground">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </ScrollReveal>
+                </div>
+              </div>
+            </section>
+            
+            {/* Usage Instructions */}
+            <section className="py-16 bg-white dark:bg-gray-900">
+              <div className="container-padding">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                  <ScrollReveal>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-6 text-foreground">Usage Instructions</h3>
+                      <div className="p-6 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <p className="text-foreground/90 leading-relaxed">{product.usage}</p>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                  
+                  <ScrollReveal delay={200}>
+                    <div className="relative h-64 rounded-xl overflow-hidden">
+                      <ThreeScene 
+                        animationType="wave" 
+                        color={product.color}
+                        productType={product.productType}
+                        className="absolute inset-0" 
+                      />
+                    </div>
+                  </ScrollReveal>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+        
+        {/* Combo Package Details */}
+        {comboProduct && (
+          <section className="py-16 bg-white dark:bg-gray-900">
+            <div className="container-padding">
+              <ScrollReveal>
+                <h2 className="text-3xl font-bold text-center mb-8 text-foreground">Package Contents</h2>
+                <p className="text-center text-foreground/70 max-w-3xl mx-auto mb-12">
+                  This value pack contains the following premium OMIWO products combined for maximum cleaning efficiency and cost savings.
+                </p>
               </ScrollReveal>
               
-              <ScrollReveal delay={200}>
-                <div className="relative h-64 rounded-xl overflow-hidden">
-                  <ThreeScene 
-                    animationType="wave" 
-                    color={product.color}
-                    productType={product.productType}
-                    className="absolute inset-0" 
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/80 backdrop-blur-md rounded-xl px-8 py-6 shadow-lg max-w-sm">
-                      <h3 className="text-lg font-bold mb-2">Safe for Daily Use</h3>
-                      <p className="text-sm text-gray-600">
-                        All OMIWO products are dermatologically tested and safe for regular use when used as directed.
-                      </p>
+              <div className="bg-blue-50 dark:bg-blue-900/30 rounded-2xl p-6 md:p-10 border border-blue-100 dark:border-blue-800">
+                <ScrollReveal delay={200}>
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <h3 className="text-xl font-medium mb-4 text-foreground">Package Contents</h3>
+                      <div className="space-y-4">
+                        {comboProduct.combo_items.split('+').map((item, index) => (
+                          <div key={index} className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-white dark:bg.gray-800 flex items-center justify-center mr-4">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <span className="text-foreground font-medium">{item.trim()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-xl font-medium mb-4 text-foreground">Value Benefits</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-white dark:bg.gray-800 flex items-center justify-center mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-foreground font-medium">Cost savings compared to individual purchases</span>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-white dark:bg.gray-800 flex items-center justify-center mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                          </div>
+                          <span className="text-foreground font-medium">Premium quality guarantee on all products</span>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-white dark:bg.gray-800 flex items-center justify-center mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-foreground font-medium">Convenient single delivery</span>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                          </div>
+                          <span className="text-foreground font-medium">Complete cleaning solution for your home</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </ScrollReveal>
+                </ScrollReveal>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
         
         {/* Related Products */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-gray-50 dark:bg-gray-800/50">
           <div className="container-padding">
             <ScrollReveal>
-              <h2 className="text-3xl font-bold text-center mb-4">Complete Your Collection</h2>
-              <p className="text-center text-gray-600 mb-12">Discover other premium products from OMIWO</p>
+              <h2 className="text-3xl font-bold text-center mb-4 text-foreground">Complete Your Collection</h2>
+              <p className="text-center text-foreground/70 mb-12">Discover other premium products from OMIWO</p>
             </ScrollReveal>
             
             <div className="grid md:grid-cols-2 gap-8">
               {Object.values(productsData)
-                .filter(relatedProduct => relatedProduct.id !== product.id)
+                .filter(relatedProduct => product ? relatedProduct.id !== product.id : true)
+                .slice(0, 2)
                 .map((relatedProduct, index) => (
                   <ScrollReveal key={index} delay={index * 200}>
-                    <Link 
-                      to={`/product/${relatedProduct.id}`} 
-                      className="group block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100"
-                    >
-                      <div className="flex items-center p-6">
-                        <div className="w-24 h-24 relative flex-shrink-0">
-                          <img 
-                            src={relatedProduct.imageSrc} 
-                            alt={relatedProduct.name} 
-                            className="h-full w-full object-contain transform group-hover:scale-110 transition-transform"
-                          />
-                        </div>
-                        <div className="ml-6">
-                          <h3 className="font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors">{relatedProduct.name}</h3>
-                          <p className="text-sm text-gray-600">{relatedProduct.tagline}</p>
+                    <Link to={`/product/${relatedProduct.id}`} className="block">
+                      <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center p-4">
+                          <div className="h-20 w-20 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mr-4">
+                            <img 
+                              src={relatedProduct.imageSrc} 
+                              alt={relatedProduct.name} 
+                              className="h-full w-full object-contain"
+                            />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-foreground">{relatedProduct.name}</h3>
+                            <p className="text-sm text-foreground/70">{relatedProduct.tagline}</p>
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -434,6 +900,17 @@ const ProductDetail = () => {
         </section>
       </main>
       <Footer />
+
+      {/* Add animation for liquid loading */}
+      <style jsx>{`
+        @keyframes liquidwave {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-liquidwave {
+          animation: liquidwave 2s ease-in-out infinite;
+        }
+      `}</style>
     </>
   );
 };
