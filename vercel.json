@@ -6,8 +6,9 @@
     { "src": "/(.*)", "dest": "/index.html" }
   ],
   "rewrites": [
+    { "source": "/auth.html", "destination": "/auth.html" },
     { "source": "/auth/callback", "destination": "/index.html" },
-    { "source": "/((?!auth\\.html).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
