@@ -10,6 +10,8 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
@@ -253,6 +255,21 @@ const ProductDetail = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      // Cleanup
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     // Simulate loading data
     setIsLoading(true);
     
@@ -351,15 +368,16 @@ const ProductDetail = () => {
       navigate('/login');
       return;
     }
-
+  
     try {
       setIsProcessingPayment(true);
       
       const productName = product ? product.name : comboProduct ? comboProduct.name : '';
       const productPrice = product ? 10 : comboProduct ? comboProduct.price : 0;
+      const totalAmount = productPrice * quantity;
       const isCombo = !!comboProduct;
       
-      // Create an order in our database
+      // Step 1: Create an order in our database
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([
@@ -369,7 +387,7 @@ const ProductDetail = () => {
             product_name: productName,
             quantity: quantity,
             unit_price: productPrice,
-            total_amount: productPrice * quantity,
+            total_amount: totalAmount,
             status: 'pending',
             is_combo: isCombo,
             shipping_address: `${userProfile?.address_line1}, ${userProfile?.city}, ${userProfile?.state}, ${userProfile?.postal_code}`,
@@ -380,27 +398,156 @@ const ProductDetail = () => {
         .single();
         
       if (orderError) throw orderError;
-      
       if (!order) throw new Error("Failed to create order");
       
-      // Initialize Razorpay
-      // This should be replaced with your actual Razorpay implementation
-      toast({
-        title: "Order created successfully",
-        description: "Opening Razorpay payment window...",
-        variant: "default"
+      // Step 2: Create a Razorpay order through our Supabase Edge Function
+      const razorpayOrderResponse = await fetch('https://gxwxiaqxtorxxiikfovn.supabase.co/functions/v1/create-razorpay-order', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          amount: totalAmount * 100, // In paise/cents
+          currency: 'INR',
+          receipt: order.id,
+          notes: {
+            order_id: order.id,
+            product_name: productName,
+            user_email: user.email
+          }
+        })
       });
       
-      // Simulate successful payment for demo
-      setTimeout(() => {
+      if (!razorpayOrderResponse.ok) {
+        const errorData = await razorpayOrderResponse.json();
+        throw new Error(`Failed to create payment order: ${errorData.message || razorpayOrderResponse.statusText}`);
+      }
+      
+      const razorpayOrderData = await razorpayOrderResponse.json();
+      
+      // Step 3: Initialize Razorpay checkout
+      if (!(window as any).Razorpay) {
+        throw new Error('Razorpay SDK failed to load');
+      }
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Using the key from env variables
+        amount: totalAmount * 100, // Amount in smallest currency unit
+        currency: "INR",
+        name: "OMIWO",
+        description: `Purchase of ${productName} (Qty: ${quantity})`,
+        order_id: razorpayOrderData.id, // Use the order ID returned from Razorpay
+        image: "/images/omiwo_logo.png",
+        prefill: {
+          name: userProfile?.full_name || "",
+          email: user.email || "",
+          contact: userProfile?.phone || ""
+        },
+        notes: {
+          address: userProfile?.address_line1 || "",
+          order_id: order.id,
+          supabase_order_id: order.id // Store this to link with our DB
+        },
+        theme: {
+          color: "#3399cc"
+        },
+        handler: async function(response: any) {
+          try {
+            // Step 4: Verify the payment through our Supabase Edge Function
+            const verifyResponse = await fetch('https://gxwxiaqxtorxxiikfovn.supabase.co/functions/v1/verify-razorpay-payment', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseAnonKey}`
+              },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                order_id: order.id
+              })
+            });
+            
+            const verifyData = await verifyResponse.json();
+            
+            if (!verifyResponse.ok || !verifyData.verified) {
+              throw new Error('Payment verification failed');
+            }
+            
+            // Step 5: Update order status in our database
+            const { error: updateError } = await supabase
+              .from('orders')
+              .update({ 
+                status: 'completed',
+                payment_id: response.razorpay_payment_id,
+                payment_details: JSON.stringify(response)
+              })
+              .eq('id', order.id);
+              
+            if (updateError) throw updateError;
+            
+            toast({
+              title: "Payment Successful",
+              description: "Your order has been placed successfully!",
+              variant: "default"
+            });
+            
+            navigate(`/order-confirmation/${order.id}`);
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            
+            // Update order status to failed
+            await supabase
+              .from('orders')
+              .update({ 
+                status: 'failed',
+                payment_details: JSON.stringify({ error: 'Payment verification failed' })
+              })
+              .eq('id', order.id);
+              
+            toast({
+              title: "Payment Verification Failed",
+              description: "There was a problem verifying your payment. Please contact support.",
+              variant: "destructive"
+            });
+          } finally {
+            setIsProcessingPayment(false);
+          }
+        }
+      };
+      
+      const razorpay = new (window as any).Razorpay(options);
+      
+      razorpay.on('payment.failed', async function(response: any) {
+        console.error('Payment failed:', response.error);
+        
+        // Update order status to failed
+        await supabase
+          .from('orders')
+          .update({ 
+            status: 'failed',
+            payment_details: JSON.stringify({
+              error_code: response.error.code,
+              error_description: response.error.description,
+              error_source: response.error.source,
+              error_reason: response.error.reason,
+              error_metadata: response.error.metadata
+            })
+          })
+          .eq('id', order.id);
+        
         toast({
-          title: "Payment Successful",
-          description: "Your order has been placed successfully!",
-          variant: "default"
+          title: "Payment Failed",
+          description: response.error.description || "Your payment could not be processed. Please try again.",
+          variant: "destructive"
         });
-        navigate(`/order-confirmation/${order.id}`);
+        
         setIsProcessingPayment(false);
-      }, 2000);
+      });
+      
+      // Open Razorpay payment dialog
+      razorpay.open();
       
     } catch (error) {
       console.error('Error processing payment:', error);
