@@ -454,6 +454,13 @@ const ProductDetail = () => {
         },
         handler: async function(response: any) {
           try {
+            // Show a loading state in the UI when verification is happening
+            toast({
+              title: "Verifying Payment",
+              description: "Please wait while we verify your payment...",
+              variant: "default"
+            });
+
             // Step 4: Verify the payment through our Supabase Edge Function
             const verifyResponse = await fetch('https://gxwxiaqxtorxxiikfovn.supabase.co/functions/v1/verify-razorpay-payment', {
               method: 'POST',
@@ -469,13 +476,15 @@ const ProductDetail = () => {
               })
             });
             
+            // Parse the response
             const verifyData = await verifyResponse.json();
             
-            if (!verifyResponse.ok || !verifyData.verified) {
+            // Change this line - check for verifyData.valid instead of verifyData.verified
+            if (!verifyResponse.ok || !verifyData.valid) {
               throw new Error('Payment verification failed');
             }
             
-            // Step 5: Update order status in our database
+            // Rest of your code remains the same
             const { error: updateError } = await supabase
               .from('orders')
               .update({ 
