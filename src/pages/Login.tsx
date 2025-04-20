@@ -63,9 +63,8 @@ const Login = () => {
       setLoading(true);
       setMessage({ text: '', type: '' });
       
-      // Get the current URL dynamically based on environment
-      // Use full URL including protocol to avoid path issues
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      // Use the auth.html page as an intermediary
+      const redirectUrl = `${window.location.origin}/auth.html`;
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -73,7 +72,6 @@ const Login = () => {
           redirectTo: redirectUrl,
           skipBrowserRedirect: false,
           queryParams: {
-            // Force a refresh of the tokens
             access_type: 'offline',
             prompt: 'consent'
           }

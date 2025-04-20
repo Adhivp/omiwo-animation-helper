@@ -15,15 +15,35 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // For hash-based redirects, we need to ensure Supabase processes the hash
-        // If we're in a production environment and using hash-based redirects
-        if (typeof window !== 'undefined') {
-          // This will trigger Supabase Auth to process the hash fragment
-          // This is critical because Supabase stores the token in local storage
-          await supabase.auth.getUser();
+        console.log("AuthCallback component mounted");
+        
+        // Check if we have stored a hash fragment in sessionStorage from auth.html
+        const storedHash = sessionStorage.getItem('auth_hash');
+        if (storedHash) {
+          console.log("Found stored hash fragment, applying to window.location");
+          
+          // Remove it from sessionStorage to prevent reuse
+          sessionStorage.removeItem('auth_hash');
+          
+          // Apply the hash manually to the current location
+          // This is a workaround for SPA routing
+          if (typeof window !== 'undefined' && !window.location.hash) {
+            window.location.hash = storedHash.startsWith('#') ? storedHash : `#${storedHash}`;
+            
+            // Wait a moment to allow Supabase to process the hash
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
         }
-
-        // Then get the session
+        
+        // Attempt to exchange the token directly
+        try {
+          await supabase.auth.getUser();
+          console.log("getUser completed");
+        } catch (getUserError) {
+          console.error("Error in getUser:", getUserError);
+        }
+        
+        // Attempt to get session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -34,22 +54,21 @@ const AuthCallback = () => {
         if (!session) {
           console.error("No session found");
           
-          // Special handling for hash fragments - try to manually extract and process the token
-          if (window.location.hash && window.location.hash.includes('access_token')) {
-            console.log("Found hash with access_token, attempting to process manually");
+          // Try several times with increasing delay
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            console.log(`Retry attempt ${attempt} to get session...`);
             
-            // Wait a moment to allow Supabase to process the hash
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Wait with increasing delay (500ms, 1000ms, 2000ms)
+            await new Promise(resolve => setTimeout(resolve, 500 * attempt));
             
-            // Try again to get the session after processing
+            // Try again
             const { data: { session: retrySession } } = await supabase.auth.getSession();
             
             if (retrySession) {
-              // Success! Continue with the authenticated user
-              console.log("Successfully processed hash fragment");
+              console.log("Successfully retrieved session on retry attempt", attempt);
               
               // Check if user profile exists
-              const { data: profile, error: profileError } = await supabase
+              const { data: profile } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', retrySession.user.id)
@@ -67,10 +86,11 @@ const AuthCallback = () => {
             }
           }
           
-          throw new Error('No session found');
+          throw new Error('No session found after multiple attempts');
         }
 
         // Check if user profile exists
+        console.log("Session found, checking for profile...");
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
