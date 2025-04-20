@@ -15,7 +15,15 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the session from the URL
+        // For hash-based redirects, we need to ensure Supabase processes the hash
+        // If we're in a production environment and using hash-based redirects
+        if (typeof window !== 'undefined') {
+          // This will trigger Supabase Auth to process the hash fragment
+          // This is critical because Supabase stores the token in local storage
+          await supabase.auth.getUser();
+        }
+
+        // Then get the session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -25,6 +33,40 @@ const AuthCallback = () => {
 
         if (!session) {
           console.error("No session found");
+          
+          // Special handling for hash fragments - try to manually extract and process the token
+          if (window.location.hash && window.location.hash.includes('access_token')) {
+            console.log("Found hash with access_token, attempting to process manually");
+            
+            // Wait a moment to allow Supabase to process the hash
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Try again to get the session after processing
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
+            
+            if (retrySession) {
+              // Success! Continue with the authenticated user
+              console.log("Successfully processed hash fragment");
+              
+              // Check if user profile exists
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', retrySession.user.id)
+                .single();
+                
+              if (profile) {
+                console.log("Profile found, redirecting to shop");
+                navigate('/shop', { replace: true });
+                return;
+              } else {
+                console.log("No profile found, redirecting to setup");
+                navigate('/setup', { replace: true });
+                return;
+              }
+            }
+          }
+          
           throw new Error('No session found');
         }
 
@@ -38,7 +80,6 @@ const AuthCallback = () => {
         // Handle profile query errors (except "no rows returned")
         if (profileError && profileError.code !== 'PGRST116') {
           console.error("Profile error:", profileError);
-          // Continue instead of throwing since we just need to know if profile exists
         }
 
         // Redirect based on whether user has a profile

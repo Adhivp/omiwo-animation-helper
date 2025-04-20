@@ -135,7 +135,9 @@ const App = () => (
             
             {/* Auth pages */}
             <Route path="/login" element={<Login />} />
+            {/* Make sure the auth callback route catches both with and without hash */}
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/callback/*" element={<AuthCallback />} />
             <Route path="/setup" element={<Setup />} />
             <Route path="/profile" element={
               <ProtectedRoute>
