@@ -11,14 +11,10 @@ const AuthCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [processingComplete, setProcessingComplete] = useState(false);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Log to help with debugging
-        console.log("Starting auth callback processing");
-        
         // Get the session from the URL
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
@@ -32,8 +28,6 @@ const AuthCallback = () => {
           throw new Error('No session found');
         }
 
-        console.log("Found active session, checking for profile");
-
         // Check if user profile exists
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -41,54 +35,49 @@ const AuthCallback = () => {
           .eq('id', session.user.id)
           .single();
           
-        // Handle true errors (not "no rows returned")
+        // Handle profile query errors (except "no rows returned")
         if (profileError && profileError.code !== 'PGRST116') {
           console.error("Profile error:", profileError);
-          throw profileError;
+          // Continue instead of throwing since we just need to know if profile exists
         }
 
-        setProcessingComplete(true);
-        
         // Redirect based on whether user has a profile
         if (profile) {
           console.log("Profile found, redirecting to shop");
-          navigate('/shop');
+          navigate('/shop', { replace: true });
         } else {
           console.log("No profile found, redirecting to setup");
-          navigate('/setup');
+          navigate('/setup', { replace: true });
         }
       } catch (error) {
         console.error('Error during auth callback:', error);
         setError('Authentication failed. Please try again.');
-        setProcessingComplete(true);
         
         // Redirect to login after a delay
         setTimeout(() => {
-          navigate('/login');
+          navigate('/login', { replace: true });
         }, 3000);
       } finally {
         setLoading(false);
       }
     };
 
-    if (!processingComplete) {
-      handleAuthCallback();
-    }
-  }, [navigate, processingComplete]);
+    handleAuthCallback();
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
         {error ? (
           <div className="text-center">
-            <div className="text-red-500 mb-4">{error}</div>
-            <p>Redirecting to login page...</p>
+            <div className="text-red-500 dark:text-red-400 mb-4">{error}</div>
+            <p className="text-gray-700 dark:text-gray-300">Redirecting to login page...</p>
           </div>
         ) : (
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <h2 className="text-xl font-medium mb-2">Completing your sign in</h2>
-            <p className="text-gray-500">Please wait while we redirect you...</p>
+            <h2 className="text-xl font-medium mb-2 text-gray-900 dark:text-gray-100">Completing your sign in</h2>
+            <p className="text-gray-500 dark:text-gray-400">Please wait while we redirect you...</p>
           </div>
         )}
       </div>

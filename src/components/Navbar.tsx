@@ -28,27 +28,37 @@ const Navbar = () => {
     };
 
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (!error && session) {
-        setUser(session.user);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        try {
-          const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (data) {
-            setProfile(data);
+        if (!error && session) {
+          setUser(session.user);
+          
+          // Fetch profile with proper error handling
+          try {
+            const { data, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows" error
+              console.error('Profile fetch error:', profileError);
+            }
+              
+            if (data) {
+              setProfile(data);
+            }
+          } catch (error) {
+            console.error('Error fetching profile:', error);
           }
-        } catch (error) {
-          console.error('Error fetching profile:', error);
         }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        // Make sure loading state is always turned off
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
     checkSession();
@@ -57,23 +67,33 @@ const Navbar = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         setUser(session.user);
-        // Fetch user profile
+        // Reset loading when fetching new profile
+        setLoading(true);
+        
+        // Fetch user profile with better error handling
         try {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
             
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching profile:', error);
+          }
+              
           if (data) {
             setProfile(data);
           }
         } catch (error) {
           console.error('Error fetching profile:', error);
+        } finally {
+          setLoading(false);
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
+        setLoading(false);
       }
     });
     
@@ -86,9 +106,16 @@ const Navbar = () => {
   }, []);
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      }
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
