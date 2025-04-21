@@ -41,18 +41,25 @@ const Profile = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeSection, setActiveSection] = useState('personal'); // Track active section for mobile
+  const [recentOrders, setRecentOrders] = useState<Array<{
+    id: string;
+    product_name: string;
+    total_amount: number;
+    status: string;
+    created_at: string;
+  }>>([]);
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error || !session) {
         navigate('/login');
         return;
       }
-      
+
       setUser(session.user);
-      
+
       // Fetch user profile
       try {
         const { data, error: profileError } = await supabase
@@ -60,18 +67,33 @@ const Profile = () => {
           .select('*')
           .eq('id', session.user.id)
           .single();
-          
+
         if (profileError) {
           throw profileError;
         }
-        
+
         if (!data) {
           navigate('/setup'); // No profile found, redirect to setup
           return;
         }
-        
+
         setProfile(data as UserProfile);
         setEditedProfile(data as UserProfile);
+
+        // Fetch recent orders
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('id, product_name, total_amount, status, created_at')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (ordersError) {
+          console.error('Error fetching recent orders:', ordersError);
+        } else {
+          setRecentOrders(ordersData || []);
+        }
+
       } catch (error) {
         console.error('Error fetching profile:', error);
         navigate('/setup');
@@ -79,7 +101,7 @@ const Profile = () => {
         setLoading(false);
       }
     };
-    
+
     checkSession();
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -87,7 +109,7 @@ const Profile = () => {
       const y = (e.clientY / window.innerHeight) * 2 - 1;
       setMousePosition({ x, y });
     };
-    
+
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [navigate]);
@@ -113,7 +135,7 @@ const Profile = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
-    
+
     setEditedProfile(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
@@ -122,11 +144,11 @@ const Profile = () => {
 
   const handleSave = async () => {
     if (!user || !editedProfile) return;
-    
+
     try {
       setSaving(true);
       setMessage({ text: '', type: '' });
-      
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -134,9 +156,9 @@ const Profile = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
-        
+
       if (error) throw error;
-      
+
       // Update local profile state
       setProfile(prevProfile => {
         if (!prevProfile) return null;
@@ -146,15 +168,44 @@ const Profile = () => {
           updated_at: new Date().toISOString()
         };
       });
-      
+
       setMessage({ text: 'Profile updated successfully!', type: 'success' });
       setEditing(false);
-      
+
     } catch (error: any) {
       console.error('Error updating profile:', error);
       setMessage({ text: `Error: ${error.message || 'Failed to update profile'}`, type: 'error' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+            Completed
+          </span>
+        );
+      case 'pending':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+            Pending
+          </span>
+        );
+      case 'shipped':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+            Shipped
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+            {status}
+          </span>
+        );
     }
   };
 
@@ -173,7 +224,6 @@ const Profile = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-24 pb-20 px-4 sm:px-6 lg:px-8">
-        {/* Profile background with animated wave */}
         <div className="absolute inset-0 z-0 overflow-hidden" style={{ top: '60px', zIndex: 0 }}>
           <div className="h-72 w-full">
             <ThreeScene 
@@ -187,7 +237,6 @@ const Profile = () => {
         </div>
         
         <div className="max-w-6xl mx-auto relative z-10">
-          {/* Profile Header: Updated with consistent padding */}
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-8 sm:p-10 mb-8">
             <ScrollReveal>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
@@ -239,7 +288,6 @@ const Profile = () => {
             </ScrollReveal>
           </div>
           
-          {/* Notification message */}
           {message.text && (
             <div className={`mb-8 p-6 rounded-xl shadow-md flex items-center ${
               message.type === 'error' 
@@ -263,7 +311,6 @@ const Profile = () => {
             </div>
           )}
           
-          {/* Mobile section tabs - visible only on small screens */}
           <div className="sm:hidden mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-2">
             <div className="flex space-x-2">
               <button 
@@ -289,12 +336,9 @@ const Profile = () => {
             </div>
           </div>
           
-          {/* Main content with sidebar - adjusted padding */}
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Main Profile Section */}
             <div className={`md:col-span-2 ${activeSection !== 'personal' && 'hidden sm:block'}`}>
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
-                {/* View Mode - consistent padding */}
                 {!editing && profile && (
                   <div className="p-8">
                     <ScrollReveal delay={100}>
@@ -308,7 +352,6 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-8">
-                        {/* Personal Information */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="bg-gray-50 dark:bg-gray-700/30 p-5 rounded-xl">
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider font-medium">Full Name</p>
@@ -320,7 +363,6 @@ const Profile = () => {
                           </div>
                         </div>
                         
-                        {/* Address Information */}
                         <div className="pt-6 mt-2 border-t border-gray-100 dark:border-gray-700">
                           <h3 className="text-lg font-medium mb-5 text-gray-900 dark:text-white flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -339,7 +381,6 @@ const Profile = () => {
                           </div>
                         </div>
                         
-                        {/* Preferences */}
                         <div className="pt-6 mt-2 border-t border-gray-100 dark:border-gray-700">
                           <h3 className="text-lg font-medium mb-5 text-gray-900 dark:text-white flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -372,7 +413,6 @@ const Profile = () => {
                           </div>
                         </div>
                         
-                        {/* Account Information */}
                         <div className="pt-6 mt-2 border-t border-gray-100 dark:border-gray-700">
                           <h3 className="text-lg font-medium mb-5 text-gray-900 dark:text-white flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -402,7 +442,6 @@ const Profile = () => {
                   </div>
                 )}
                 
-                {/* Edit Mode - consistent padding */}
                 {editing && editedProfile && (
                   <div className="p-8">
                     <form>
@@ -417,7 +456,6 @@ const Profile = () => {
                         </div>
                         
                         <div className="space-y-8">
-                          {/* Personal Information - consistent internal spacing */}
                           <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-xl">
                             <h3 className="text-lg font-medium mb-5 text-gray-900 dark:text-white">Personal Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -453,7 +491,6 @@ const Profile = () => {
                             </div>
                           </div>
                           
-                          {/* Address - consistent internal spacing */}
                           <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-xl">
                             <h3 className="text-lg font-medium mb-5 text-gray-900 dark:text-white flex items-center">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -563,7 +600,6 @@ const Profile = () => {
                             </div>
                           </div>
                           
-                          {/* Preferences - consistent internal spacing */}
                           <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-xl">
                             <h3 className="text-lg font-medium mb-5 text-gray-900 dark:text-white flex items-center">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -607,7 +643,6 @@ const Profile = () => {
                             </div>
                           </div>
                           
-                          {/* Action buttons - consistent spacing */}
                           <div className="flex justify-end space-x-4 pt-4">
                             <button
                               type="button"
@@ -643,9 +678,7 @@ const Profile = () => {
               </div>
             </div>
             
-            {/* Sidebar Section - consistent padding within cards */}
             <div className={`md:col-span-1 ${activeSection !== 'account' && 'hidden sm:block'}`}>
-              {/* Account Summary Card */}
               <ScrollReveal delay={200}>
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
                   <div className="p-6">
@@ -680,59 +713,73 @@ const Profile = () => {
                 </div>
               </ScrollReveal>
               
-              {/* Order History Section */}
               <ScrollReveal delay={300}>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-5 text-gray-900 dark:text-white flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      Recent Orders
-                    </h3>
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      <p className="mb-3">You haven't placed any orders yet.</p>
-                      <a 
-                        href="/" 
-                        className="inline-flex items-center justify-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors font-medium text-sm"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    <div className="flex justify-between items-center mb-5">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
-                        Browse Products
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-
-              {/* Additional Information Card */}
-              <ScrollReveal delay={400}>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Need Help?
-                    </h3>
-                    <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl">
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                        If you need assistance with your account or have any questions about our products, our customer support team is here to help.
-                      </p>
-                      <a 
-                        href="/contact" 
-                        className="inline-flex w-full justify-center items-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-700 dark:to-indigo-500 text-white rounded-lg hover:shadow-md transition-all font-medium text-sm"
+                        Recent Orders
+                      </h3>
+                      <button 
+                        className="text-sm text-blue-600 dark:text-blue-400"
+                        onClick={() => navigate('/orders')}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        Contact Support
-                      </a>
+                        View All
+                      </button>
                     </div>
+                    
+                    {recentOrders.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 mx-auto mb-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <p className="mb-3">You haven't placed any orders yet.</p>
+                        <a 
+                          href="/shop" 
+                          className="inline-flex items-center justify-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors font-medium text-sm"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                          Browse Products
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {recentOrders.map(order => (
+                          <div 
+                            key={order.id}
+                            className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                            onClick={() => navigate(`/order-confirmation/${order.id}`)}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900 dark:text-white truncate">{order.product_name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {new Date(order.created_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                              <div className="ml-3">
+                                {getStatusBadge(order.status)}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">₹{order.total_amount}</p>
+                              <svg className="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </ScrollReveal>
