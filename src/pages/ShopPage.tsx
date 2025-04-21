@@ -6,7 +6,9 @@ import Footer from '../components/Footer';
 import ScrollReveal from '../components/ScrollReveal';
 import ThreeScene from '../components/ThreeScene';
 import { Button } from "@/components/ui/button";
- 
+import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Import toast hook
+
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -28,6 +30,7 @@ type ProductType = {
 };
 
 const ShopPage = () => {
+  const { toast } = useToast(); // Add this line
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [mainProducts, setMainProducts] = useState<ProductType[]>([]);
@@ -211,6 +214,22 @@ const ShopPage = () => {
     return Math.ceil(minOrderValue / price);
   };
 
+  // New function to handle product click with minimum order requirement
+  const handleProductClick = (productId: string, price: number, isCombo: boolean = false) => {
+    // For combos, check if price is already ≥ 100
+    if (isCombo && price < 100) {
+      toast({
+        title: "Minimum order value not met",
+        description: "The minimum order value is ₹100. Please select a different combo package.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // For regular products, navigate to product page
+    navigate(`/product/${productId}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -308,7 +327,7 @@ const ShopPage = () => {
                         </div>
                         
                         <Button 
-                          onClick={() => navigate(`/product/${product.id}`)}
+                          onClick={() => handleProductClick(product.id, product.price)}
                           className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
                         >
                           Buy Now
@@ -363,7 +382,7 @@ const ShopPage = () => {
                         </div>
                         
                         <Button 
-                          onClick={() => navigate(`/product/${product.id}`)}
+                          onClick={() => handleProductClick(product.id, product.price, true)}
                           className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
                         >
                           Buy Now

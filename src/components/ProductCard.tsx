@@ -270,6 +270,16 @@ const ProductCard = ({
             )}
           </div>
           
+          {/* Minimum order notice */}
+          <div className="mb-4 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 rounded-md text-xs text-amber-800 dark:text-amber-300">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Minimum order value: ₹100</span>
+            </div>
+          </div>
+          
           <div className="flex flex-col space-y-3">
             {/* "Learn More" button that's always visible */}
             {isLoggedIn ? (

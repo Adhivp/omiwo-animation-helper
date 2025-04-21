@@ -11,6 +11,7 @@ import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
 import GetStarted from "./components/GetStarted";
 import ProductDetail from "./components/ProductDetail";
+import BulkOrder from "./pages/BulkOrder";
 import Login from "./pages/Login";
 import AuthCallback from "./pages/AuthCallback";
 import Setup from "./pages/Setup";
@@ -110,6 +111,13 @@ const App = () => (
             <Route path="/product/:productId" element={
               <ProtectedRoute>
                 <ProductDetail />
+              </ProtectedRoute>
+            } />
+            
+            {/* Bulk order page - protected */}
+            <Route path="/bulk-order/:productId" element={
+              <ProtectedRoute>
+                <BulkOrder />
               </ProtectedRoute>
             } />
             

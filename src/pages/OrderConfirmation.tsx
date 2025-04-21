@@ -33,6 +33,7 @@ type OrderDetails = {
   is_combo: boolean;
   estimated_delivery: string;
   shipping_address: string;
+  delivery_charge?: number;
 };
 
 const OrderConfirmation = () => {
@@ -146,8 +147,10 @@ const OrderConfirmation = () => {
                   </div>
                   
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="text-foreground">Free</span>
+                    <span className="text-muted-foreground">Delivery Charges</span>
+                    <span className="text-foreground">
+                      {order.delivery_charge ? `₹${order.delivery_charge}` : 'Free'}
+                    </span>
                   </div>
                   
                   <div className="flex justify-between pt-4 border-t border-border text-lg font-bold">

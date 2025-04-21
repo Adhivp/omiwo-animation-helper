@@ -355,11 +355,29 @@ const ProductDetail = () => {
 
   const calculateTotalPrice = () => {
     if (product) {
-      return 10 * quantity; // Assume regular products are 10 each
+      return 10 * quantity; // Regular products are 10 each
     } else if (comboProduct) {
       return comboProduct.price * quantity;
     }
     return 0;
+  };
+
+  // Check if order meets minimum requirement
+  const meetsMinimumOrder = () => {
+    const totalPrice = calculateTotalPrice();
+    return totalPrice >= 100;
+  };
+
+  // Calculate delivery charges based on address
+  const calculateDeliveryCharges = () => {
+    // Kerala pincodes start with 67, 68, 69
+    const isKerala = userProfile?.postal_code?.match(/^(67|68|69)/);
+    return isKerala ? 40 : 0; // ₹40 delivery charge within Kerala, free outside
+  };
+
+  // Calculate final amount including delivery
+  const calculateFinalAmount = () => {
+    return calculateTotalPrice() + calculateDeliveryCharges();
   };
 
   // Handle buy now button
@@ -368,13 +386,23 @@ const ProductDetail = () => {
       navigate('/login');
       return;
     }
-  
+    
+    // Check minimum order requirement
+    if (!meetsMinimumOrder()) {
+      toast({
+        title: "Minimum order value not met",
+        description: "The minimum order value is ₹100. Please increase your quantity.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setIsProcessingPayment(true);
       
       const productName = product ? product.name : comboProduct ? comboProduct.name : '';
       const productPrice = product ? 10 : comboProduct ? comboProduct.price : 0;
-      const totalAmount = productPrice * quantity;
+      const totalAmount = calculateFinalAmount(); // Include delivery charges
       const isCombo = !!comboProduct;
       
       // Step 1: Create an order in our database
@@ -388,6 +416,7 @@ const ProductDetail = () => {
             quantity: quantity,
             unit_price: productPrice,
             total_amount: totalAmount,
+            delivery_charge: calculateDeliveryCharges(),
             status: 'pending',
             is_combo: isCombo,
             shipping_address: `${userProfile?.address_line1}, ${userProfile?.city}, ${userProfile?.state}, ${userProfile?.postal_code}`,
@@ -769,25 +798,56 @@ const ProductDetail = () => {
                             />
                             <span className="text-foreground/70">
                               Total: <span className="font-bold text-primary">₹{calculateTotalPrice()}</span>
+                              {!meetsMinimumOrder() && (
+                                <span className="ml-2 text-red-500 dark:text-red-400 text-sm">
+                                  (Min. ₹100)
+                                </span>
+                              )}
                             </span>
                           </div>
                         </div>
                         
+                        {/* Delivery charges information */}
+                        {calculateDeliveryCharges() > 0 && (
+                          <div className="flex items-center text-amber-600 dark:text-amber-400 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>₹40 delivery charge applies within Kerala</span>
+                          </div>
+                        )}
+                        
                         <div className="flex gap-4 pt-2">
                           <Button
                             onClick={handleBuyNow}
-                            disabled={isProcessingPayment}
-                            className="bg-blue-600 hover:bg-blue-700 flex-1"
+                            disabled={isProcessingPayment || !meetsMinimumOrder()}
+                            className={`bg-blue-600 hover:bg-blue-700 flex-1 ${!meetsMinimumOrder() ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {isProcessingPayment ? 'Processing...' : 'Buy Now'}
                           </Button>
+                          
+                          {/* WhatsApp contact button for assistance */}
+                          <Button
+                            onClick={() => window.open(`https://wa.me/917306379513?text=I'm interested in purchasing ${product ? product.name : comboProduct ? comboProduct.name : 'your products'}. Please provide more information.`, '_blank')}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/>
+                            </svg>
+                            Contact on WhatsApp
+                          </Button>
                         </div>
 
-                        {!isLoggedIn && (
-                          <p className="text-amber-600 dark:text-amber-400 text-sm">
-                            <Info className="inline h-4 w-4 mr-1" />
-                            Sign in required to complete your purchase
-                          </p>
+                        {/* Bulk order section */}
+                        {product && (
+                          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <Link to={`/bulk-order/${productId}`} className="flex items-center text-blue-600 dark:text-blue-400 font-medium">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              View Bulk Order Options (Save up to 35%)
+                            </Link>
+                          </div>
                         )}
                       </div>
                     </CardContent>
