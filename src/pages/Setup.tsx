@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/components/theme-provider';
 import ScrollReveal from '../components/ScrollReveal';
-import { useTheme } from 'next-themes';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../contexts/AuthContext';
 
 type UserProfile = {
   id: string;
@@ -26,12 +22,11 @@ type UserProfile = {
 const Setup = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, refreshProfile, isLoading } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
 
-  const [profile, setProfile] = useState<Partial<UserProfile>>({
+  const [profileData, setProfileData] = useState<Partial<UserProfile>>({
     full_name: '',
     phone: '',
     address_line1: '',
@@ -45,49 +40,31 @@ const Setup = () => {
   });
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error checking session:', error);
-        navigate('/login');
-        return;
-      }
-      
-      if (!session) {
-        navigate('/login');
-        return;
-      }
-      
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-        
-      if (existingProfile) {
-        navigate('/profile');
-        return;
-      }
-      
-      if (session.user.user_metadata?.full_name) {
-        setProfile(prev => ({
-          ...prev,
-          full_name: session.user.user_metadata.full_name
-        }));
-      }
-      
-      setUser(session.user);
-      setLoading(false);
-    };
+    // If user is already logged in and has a profile, redirect to profile page
+    if (profile) {
+      navigate('/profile');
+      return;
+    }
     
-    checkSession();
-  }, [navigate]);
+    // If user is not logged in, redirect to login
+    if (!isLoading && !user) {
+      navigate('/login');
+      return;
+    }
+    
+    // Pre-fill name if available
+    if (user?.user_metadata?.full_name) {
+      setProfileData(prev => ({
+        ...prev,
+        full_name: user.user_metadata.full_name
+      }));
+    }
+  }, [user, profile, isLoading, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     
-    setProfile(prev => ({
+    setProfileData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
@@ -106,17 +83,17 @@ const Setup = () => {
         .from('profiles')
         .insert({
           id: user.id,
-          full_name: profile.full_name,
+          full_name: profileData.full_name,
           email: user.email,
-          phone: profile.phone,
-          address_line1: profile.address_line1,
-          address_line2: profile.address_line2,
-          city: profile.city,
-          state: profile.state,
-          postal_code: profile.postal_code,
-          country: profile.country,
-          preferred_language: profile.preferred_language,
-          marketing_consent: profile.marketing_consent,
+          phone: profileData.phone,
+          address_line1: profileData.address_line1,
+          address_line2: profileData.address_line2,
+          city: profileData.city,
+          state: profileData.state,
+          postal_code: profileData.postal_code,
+          country: profileData.country,
+          preferred_language: profileData.preferred_language,
+          marketing_consent: profileData.marketing_consent,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -128,8 +105,11 @@ const Setup = () => {
         type: 'success' 
       });
       
+      // Refresh profile in auth context
+      await refreshProfile();
+      
       setTimeout(() => {
-        navigate('/profile');
+        navigate('/shop');
       }, 1500);
       
     } catch (error: any) {
@@ -143,7 +123,7 @@ const Setup = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background dark:bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
@@ -184,7 +164,7 @@ const Setup = () => {
                       type="text"
                       id="full_name"
                       name="full_name"
-                      value={profile.full_name}
+                      value={profileData.full_name}
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -201,7 +181,7 @@ const Setup = () => {
                       type="tel"
                       id="phone"
                       name="phone"
-                      value={profile.phone}
+                      value={profileData.phone}
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -218,7 +198,7 @@ const Setup = () => {
                       type="text"
                       id="address_line1"
                       name="address_line1"
-                      value={profile.address_line1}
+                      value={profileData.address_line1}
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -235,7 +215,7 @@ const Setup = () => {
                       type="text"
                       id="address_line2"
                       name="address_line2"
-                      value={profile.address_line2}
+                      value={profileData.address_line2}
                       onChange={handleChange}
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
@@ -252,7 +232,7 @@ const Setup = () => {
                         type="text"
                         id="city"
                         name="city"
-                        value={profile.city}
+                        value={profileData.city}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -269,7 +249,7 @@ const Setup = () => {
                         type="text"
                         id="state"
                         name="state"
-                        value={profile.state}
+                        value={profileData.state}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -288,7 +268,7 @@ const Setup = () => {
                         type="text"
                         id="postal_code"
                         name="postal_code"
-                        value={profile.postal_code}
+                        value={profileData.postal_code}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -301,45 +281,18 @@ const Setup = () => {
                       <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Country*
                       </label>
-                      <select
+                      <input
+                        type="text"
                         id="country"
                         name="country"
-                        value={profile.country}
+                        value={profileData.country}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      >
-                        <option value="India">India</option>
-                        <option value="United States">United States</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Australia">Australia</option>
-                        {/* Add more countries as needed */}
-                      </select>
+                      />
                     </div>
                   </ScrollReveal>
                 </div>
-                
-                <ScrollReveal delay={500}>
-                  <div>
-                    <label htmlFor="preferred_language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Preferred Language
-                    </label>
-                    <select
-                      id="preferred_language"
-                      name="preferred_language"
-                      value={profile.preferred_language}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="English">English</option>
-                      <option value="Hindi">Hindi</option>
-                      <option value="Malayalam">Malayalam</option>
-                      <option value="Tamil">Tamil</option>
-                      {/* Add more languages as needed */}
-                    </select>
-                  </div>
-                </ScrollReveal>
                 
                 <ScrollReveal delay={550}>
                   <div className="flex items-center mt-2">
@@ -347,7 +300,7 @@ const Setup = () => {
                       type="checkbox"
                       id="marketing_consent"
                       name="marketing_consent"
-                      checked={profile.marketing_consent}
+                      checked={profileData.marketing_consent}
                       onChange={handleChange}
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                     />

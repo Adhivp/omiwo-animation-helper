@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { useAuth } from '../contexts/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, refreshProfile } = useAuth();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -26,105 +21,48 @@ const AuthCallback = () => {
           sessionStorage.removeItem('auth_hash');
           
           // Apply the hash manually to the current location
-          // This is a workaround for SPA routing
           if (typeof window !== 'undefined' && !window.location.hash) {
             window.location.hash = storedHash.startsWith('#') ? storedHash : `#${storedHash}`;
-            
-            // Wait a moment to allow Supabase to process the hash
-            await new Promise(resolve => setTimeout(resolve, 500));
           }
         }
-        
-        // Attempt to exchange the token directly
-        try {
-          await supabase.auth.getUser();
-          console.log("getUser completed");
-        } catch (getUserError) {
-          console.error("Error in getUser:", getUserError);
-        }
-        
-        // Attempt to get session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          throw sessionError;
-        }
 
-        if (!session) {
-          console.error("No session found");
-          
-          // Try several times with increasing delay
-          for (let attempt = 1; attempt <= 3; attempt++) {
-            console.log(`Retry attempt ${attempt} to get session...`);
+        // Wait for auth to be processed
+        setTimeout(async () => {
+          try {
+            // Refresh the user profile
+            await refreshProfile();
             
-            // Wait with increasing delay (500ms, 1000ms, 2000ms)
-            await new Promise(resolve => setTimeout(resolve, 500 * attempt));
-            
-            // Try again
-            const { data: { session: retrySession } } = await supabase.auth.getSession();
-            
-            if (retrySession) {
-              console.log("Successfully retrieved session on retry attempt", attempt);
-              
-              // Check if user profile exists
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', retrySession.user.id)
-                .single();
-                
-              if (profile) {
-                console.log("Profile found, redirecting to shop");
-                navigate('/shop', { replace: true });
-                return;
-              } else {
-                console.log("No profile found, redirecting to setup");
-                navigate('/setup', { replace: true });
-                return;
-              }
+            // Navigate based on whether user has a profile
+            if (profile) {
+              console.log("Profile found, redirecting to shop");
+              navigate('/shop', { replace: true });
+            } else if (user) {
+              console.log("No profile found, redirecting to setup");
+              navigate('/setup', { replace: true });
+            } else {
+              // If no user after waiting, redirect to login
+              console.log("No user found after auth callback");
+              navigate('/login', { replace: true });
             }
+          } catch (refreshError) {
+            console.error("Error in refresh/navigation:", refreshError);
+            navigate('/login', { replace: true });
           }
-          
-          throw new Error('No session found after multiple attempts');
-        }
+        }, 1000);
 
-        // Check if user profile exists
-        console.log("Session found, checking for profile...");
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-          
-        // Handle profile query errors (except "no rows returned")
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error("Profile error:", profileError);
-        }
-
-        // Redirect based on whether user has a profile
-        if (profile) {
-          console.log("Profile found, redirecting to shop");
-          navigate('/shop', { replace: true });
-        } else {
-          console.log("No profile found, redirecting to setup");
-          navigate('/setup', { replace: true });
-        }
-      } catch (error) {
-        console.error('Error during auth callback:', error);
+      } catch (callbackError) {
+        console.error('Error during auth callback:', callbackError);
         setError('Authentication failed. Please try again.');
         
         // Redirect to login after a delay
         setTimeout(() => {
           navigate('/login', { replace: true });
         }, 3000);
-      } finally {
-        setLoading(false);
       }
     };
 
     handleAuthCallback();
-  }, [navigate]);
+  }, [navigate, user, profile, refreshProfile]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">

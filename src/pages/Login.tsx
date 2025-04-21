@@ -1,51 +1,21 @@
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import ScrollReveal from '../components/ScrollReveal';
 import ThreeScene from '../components/ThreeScene';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { user, isLoading, signIn } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        setIsAuthenticated(true);
-        
-        // Check if user profile exists
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          // If the user has a profile, redirect to shop
-          if (profile) {
-            navigate('/shop');
-          } else {
-            // If no profile, redirect to setup
-            navigate('/setup');
-          }
-        } catch (error) {
-          console.error('Error checking profile:', error);
-        }
-      }
-    };
-    
-    checkUser();
+    // Redirect if already logged in
+    if (user) {
+      navigate('/shop');
+    }
     
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -55,47 +25,29 @@ const Login = () => {
     
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [navigate]);
+  }, [navigate, user]);
 
   // Handle Google sign in
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       setMessage({ text: '', type: '' });
-      
-      // Use the auth.html page as an intermediary
-      const redirectUrl = `${window.location.origin}/auth.html`;
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: false,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
-        }
-      });
-      
-      if (error) {
-        setMessage({ text: error.message, type: 'error' });
-      }
+      await signIn('google');
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
-      setMessage({ text: 'An unexpected error occurred', type: 'error' });
+      setMessage({ text: error.message || 'An unexpected error occurred', type: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
-  // If already authenticated but waiting for redirect
-  if (isAuthenticated) {
+  // If checking auth state
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-foreground/80">Redirecting you...</p>
+          <p className="text-foreground/80">Loading...</p>
         </div>
       </div>
     );

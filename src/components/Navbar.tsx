@@ -1,22 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import GoldCoinDraw from './GoldCoinDraw';
 import { ThemeToggle } from '@/components/theme-toggle';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [goldDrawOpen, setGoldDrawOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, signOut, isLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Determine if we're on the main landing page
+  const isMainLanding = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,95 +25,19 @@ const Navbar = () => {
       }
     };
 
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (!error && session) {
-          setUser(session.user);
-          
-          // Fetch profile with proper error handling
-          try {
-            const { data, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (profileError && profileError.code !== 'PGRST116') { // Ignore "no rows" error
-              console.error('Profile fetch error:', profileError);
-            }
-              
-            if (data) {
-              setProfile(data);
-            }
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
-        // Make sure loading state is always turned off
-        setLoading(false);
-      }
-    };
-    
-    checkSession();
     window.addEventListener('scroll', handleScroll);
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setUser(session.user);
-        // Reset loading when fetching new profile
-        setLoading(true);
-        
-        // Fetch user profile with better error handling
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching profile:', error);
-          }
-              
-          if (data) {
-            setProfile(data);
-          }
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-        } finally {
-          setLoading(false);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-      }
-    });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
     };
   }, []);
 
   const handleSignOut = async () => {
     try {
-      setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-      }
+      await signOut();
+      navigate('/'); // Always redirect to home after sign out
     } catch (error) {
       console.error('Error during sign out:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -134,13 +56,21 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
-          <a href="/#products" className="text-foreground/80 hover:text-foreground transition-colors">Products</a>
+          {/* Show Products, About, Contact links only on main page or when not logged in */}
+          {(isMainLanding || !user) && (
+            <>
+              <a href={isMainLanding ? "/#products" : "/"} className="text-foreground/80 hover:text-foreground transition-colors">Products</a>
+              <a href={isMainLanding ? "/#about" : "/"} className="text-foreground/80 hover:text-foreground transition-colors">About</a>
+              <a href={isMainLanding ? "/#contact" : "/"} className="text-foreground/80 hover:text-foreground transition-colors">Contact</a>
+            </>
+          )}
+          
+          {/* Show Shop link when logged in */}
           {user && (
             <Link to="/shop" className="text-foreground/80 hover:text-foreground transition-colors">Shop</Link>
           )}
-          <a href="/#about" className="text-foreground/80 hover:text-foreground transition-colors">About</a>
-          <a href="/#contact" className="text-foreground/80 hover:text-foreground transition-colors">Contact</a>
           
+          {/* Gold coin button - always visible */}
           <button 
             onClick={() => setGoldDrawOpen(true)} 
             className="flex items-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-2 rounded-full font-medium hover:shadow-lg hover:from-yellow-500 hover:to-amber-600 transition-all transform hover:-translate-y-0.5"
@@ -154,19 +84,20 @@ const Navbar = () => {
           
           <ThemeToggle />
 
-          {loading ? (
+          {isLoading ? (
             <div className="w-8 h-8 border-2 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
           ) : user ? (
             <div className="relative group">
               <button className="flex items-center space-x-2 py-2 px-3 rounded-full bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
-                  {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                  {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
                 </div>
                 <span className="font-medium text-gray-800 dark:text-gray-100">{profile?.full_name ? profile.full_name.split(' ')[0] : 'Account'}</span>
               </button>
               
               {/* Dropdown menu */}
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                <Link to="/orders" className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700">My Orders</Link>
                 <Link to="/profile" className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700">My Profile</Link>
                 <button 
                   onClick={handleSignOut}
@@ -207,13 +138,34 @@ const Navbar = () => {
           mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
         )}
       >
-        <a 
-          href="#products" 
-          className="text-xl font-medium text-foreground"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          Products
-        </a>
+        {/* Show Products, About, Contact links only on main page or when not logged in */}
+        {(isMainLanding || !user) && (
+          <>
+            <a 
+              href={isMainLanding ? "#products" : "/"} 
+              className="text-xl font-medium text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Products
+            </a>
+            <a 
+              href={isMainLanding ? "#about" : "/"} 
+              className="text-xl font-medium text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About
+            </a>
+            <a 
+              href={isMainLanding ? "#contact" : "/"} 
+              className="text-xl font-medium text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Contact
+            </a>
+          </>
+        )}
+        
+        {/* Show Shop link when logged in */}
         {user && (
           <Link 
             to="/shop" 
@@ -223,20 +175,7 @@ const Navbar = () => {
             Shop
           </Link>
         )}
-        <a 
-          href="#about" 
-          className="text-xl font-medium text-foreground"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          About
-        </a>
-        <a 
-          href="#contact" 
-          className="text-xl font-medium text-foreground"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          Contact
-        </a>
+        
         <button
           onClick={() => {
             setMobileMenuOpen(false);
@@ -258,6 +197,13 @@ const Navbar = () => {
 
         {user ? (
           <>
+            <Link 
+              to="/orders" 
+              className="px-6 py-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              My Orders
+            </Link>
             <Link 
               to="/profile" 
               className="px-6 py-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg font-medium"
