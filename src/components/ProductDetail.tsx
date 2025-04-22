@@ -370,10 +370,12 @@ const ProductDetail = () => {
   const meetsMinimumOrder = () => {
     const totalPrice = calculateTotalPrice();
     
-    // Special minimum order value for hand wash (50 instead of 100)
+    // For HandWash, minimum quantity is 50 units (which equals 100rs at 2rs/unit)
     if (product && product.productType === 'handWash') {
-      return totalPrice >= 50;
+      return quantity >= 50;  // Minimum 50 units
     }
+    
+    // For other products, keep the minimum order value at 100rs
     return totalPrice >= 100;
   };
 
