@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const { user, profile, refreshProfile } = useAuth();
 
@@ -11,19 +12,21 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log("AuthCallback component mounted");
+        console.log("Current hash:", window.location.hash);
+        console.log("Current pathname:", window.location.pathname);
         
-        // Check if we have stored a hash fragment in sessionStorage from auth.html
+        // Get hash fragment from either URL or sessionStorage
+        let hashFragment = location.hash || window.location.hash;
         const storedHash = sessionStorage.getItem('auth_hash');
-        if (storedHash) {
-          console.log("Found stored hash fragment, applying to window.location");
-          
-          // Remove it from sessionStorage to prevent reuse
+        
+        if (!hashFragment && storedHash) {
+          console.log("Using stored hash fragment:", storedHash);
+          hashFragment = storedHash.startsWith('#') ? storedHash : `#${storedHash}`;
           sessionStorage.removeItem('auth_hash');
-          
-          // Apply the hash manually to the current location
-          if (typeof window !== 'undefined' && !window.location.hash) {
-            window.location.hash = storedHash.startsWith('#') ? storedHash : `#${storedHash}`;
-          }
+        }
+        
+        if (hashFragment && !hashFragment.includes('access_token')) {
+          console.log("Hash fragment doesn't contain access token:", hashFragment);
         }
 
         // Wait for auth to be processed
@@ -48,7 +51,7 @@ const AuthCallback = () => {
             console.error("Error in refresh/navigation:", refreshError);
             navigate('/login', { replace: true });
           }
-        }, 1000);
+        }, 1500); // Increased timeout for more reliable auth processing
 
       } catch (callbackError) {
         console.error('Error during auth callback:', callbackError);
@@ -62,7 +65,7 @@ const AuthCallback = () => {
     };
 
     handleAuthCallback();
-  }, [navigate, user, profile, refreshProfile]);
+  }, [navigate, user, profile, refreshProfile, location.hash]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">

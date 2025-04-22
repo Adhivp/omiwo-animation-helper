@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -72,6 +72,10 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/auth/callback/*" element={<AuthCallback />} />
+              
+              {/* Add this fallback redirect for `/auth/callback` */}
+              <Route path="/auth/*" element={<Navigate to="/auth/callback" replace />} />
+              
               <Route path="/setup" element={<Setup />} />
               <Route path="/profile" element={
                 <ProtectedRoute>
