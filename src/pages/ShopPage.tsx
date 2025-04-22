@@ -8,6 +8,7 @@ import ThreeScene from '../components/ThreeScene';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useToast } from "@/hooks/use-toast"; // Import toast hook
+import { Box, Package, TruckIcon, Users } from 'lucide-react'; // Import icons for bulk section
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -266,6 +267,12 @@ const ShopPage = () => {
             >
               Combo Packs
             </button>
+            <button 
+              className={`px-6 py-3 font-medium text-lg ${activeTab === 'bulk' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
+              onClick={() => setActiveTab('bulk')}
+            >
+              Bulk Orders
+            </button>
           </div>
           
           {/* Main Products Section */}
@@ -392,6 +399,150 @@ const ShopPage = () => {
                   </ScrollReveal>
                 ))}
               </div>
+            </>
+          )}
+          
+          {/* Bulk Order Section */}
+          {activeTab === 'bulk' && (
+            <>
+              <ScrollReveal delay={100}>
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold mb-2 text-foreground">Bulk Orders</h2>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    Special pricing for large quantity orders of 1,000+ units. Save up to 35% on bulk purchases.
+                  </p>
+                  
+                  {/* Bulk ordering benefits */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border border-blue-100 dark:border-blue-800/30 text-center">
+                      <div className="h-12 w-12 bg-blue-100 dark:bg-blue-800/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <TruckIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <h3 className="font-medium text-foreground mb-1">Free Delivery</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">No shipping charges for bulk orders</p>
+                    </div>
+                    
+                    <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg border border-green-100 dark:border-green-800/30 text-center">
+                      <div className="h-12 w-12 bg-green-100 dark:bg-green-800/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Box className="h-6 w-6 text-green-600 dark:text-green-400" />
+                      </div>
+                      <h3 className="font-medium text-foreground mb-1">Up to 35% Off</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Significant discounts on large quantities</p>
+                    </div>
+                    
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg border border-purple-100 dark:border-purple-800/30 text-center">
+                      <div className="h-12 w-12 bg-purple-100 dark:bg-purple-800/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Package className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <h3 className="font-medium text-foreground mb-1">Custom Packaging</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Optional branding for businesses</p>
+                    </div>
+                    
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-lg border border-amber-100 dark:border-amber-800/30 text-center">
+                      <div className="h-12 w-12 bg-amber-100 dark:bg-amber-800/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Users className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <h3 className="font-medium text-foreground mb-1">Dedicated Support</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Personal account manager for your orders</p>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {mainProducts.map((product) => (
+                  <ScrollReveal key={`bulk-${product.id}`}>
+                    <div 
+                      className="bg-white dark:bg-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow relative"
+                      onMouseEnter={() => handleProductHover(`bulk-${product.id}`)}
+                      onMouseLeave={() => handleProductHover(null)}
+                    >
+                      {/* Discount badge */}
+                      <div className="absolute top-4 right-4 bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full z-20">
+                        Up to 35% OFF
+                      </div>
+                      
+                      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900">
+                        {/* Animated Background */}
+                        <div className="absolute inset-0">
+                          <ThreeScene 
+                            animationType="wave" 
+                            color={product.color} 
+                            productType={product.productType as any}
+                            isHovered={isHovered === `bulk-${product.id}`}
+                          />
+                        </div>
+                        
+                        {/* Product Image */}
+                        <div className="relative z-10 h-full flex items-center justify-center">
+                          <img 
+                            src={product.imageSrc} 
+                            alt={product.name} 
+                            className="h-40 w-auto max-w-[80%] object-contain transform transition-all duration-500"
+                            style={{ 
+                              filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.15))',
+                              transform: isHovered === `bulk-${product.id}` ? 'scale(1.08)' : 'scale(1)'
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold mb-2 text-foreground">Bulk {product.name}</h3>
+                        
+                        <ul className="mb-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                          <li className="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            1,000+ units: {product.productType === 'handWash' ? '₹1.75' : '₹7.50'} per unit (25% off)
+                          </li>
+                          <li className="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            5,000+ units: {product.productType === 'handWash' ? '₹1.50' : '₹7.00'} per unit (30% off)
+                          </li>
+                          <li className="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            10,000+ units: {product.productType === 'handWash' ? '₹1.00' : '₹6.50'} per unit (35% off)
+                          </li>
+                        </ul>
+                        
+                        <Link to={`/bulk-order/${product.id}`}>
+                          <Button 
+                            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                          >
+                            Get Bulk Quote
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+              
+              {/* Bulk order info section */}
+              <ScrollReveal delay={300}>
+                <div className="mt-12 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                  <h3 className="text-xl font-bold mb-4 text-foreground">How Bulk Ordering Works</h3>
+                  <ol className="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
+                    <li>Select the product you're interested in for bulk ordering</li>
+                    <li>View the detailed pricing tiers and potential savings</li>
+                    <li>Contact our sales team through the provided WhatsApp link</li>
+                    <li>Receive your custom quote based on your specific requirements</li>
+                    <li>Confirm your order and enjoy free delivery and significant savings</li>
+                  </ol>
+                  
+                  <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800/30 rounded-lg">
+                    <p className="text-center text-yellow-800 dark:text-yellow-300 font-medium">
+                      For urgent bulk orders or special requirements, call us directly at +91 7306379513
+                    </p>
+                  </div>
+                </div>
+              </ScrollReveal>
             </>
           )}
         </div>
