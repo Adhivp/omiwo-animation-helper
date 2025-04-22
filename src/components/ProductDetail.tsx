@@ -355,7 +355,11 @@ const ProductDetail = () => {
 
   const calculateTotalPrice = () => {
     if (product) {
-      return 10 * quantity; // Regular products are 10 each
+      // Check if it's hand wash and use the special price
+      if (product.productType === 'handWash') {
+        return 2 * quantity; // Hand wash is 2rs each
+      }
+      return 10 * quantity; // Other products are 10 each
     } else if (comboProduct) {
       return comboProduct.price * quantity;
     }
@@ -365,6 +369,11 @@ const ProductDetail = () => {
   // Check if order meets minimum requirement
   const meetsMinimumOrder = () => {
     const totalPrice = calculateTotalPrice();
+    
+    // Special minimum order value for hand wash (50 instead of 100)
+    if (product && product.productType === 'handWash') {
+      return totalPrice >= 50;
+    }
     return totalPrice >= 100;
   };
 

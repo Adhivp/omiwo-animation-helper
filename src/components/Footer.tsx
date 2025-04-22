@@ -19,34 +19,7 @@ const Footer = () => {
             </ScrollReveal>
           </div>
           
-          {/* Links Column */}
-          <div className="md:col-span-1">
-            <ScrollReveal delay={100}>
-              <h4 className="text-lg font-bold mb-4 text-foreground">Quick Links</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#products" className="text-foreground/70 hover:text-omiwo-blue dark:hover:text-blue-400 transition-colors">
-                    Products
-                  </a>
-                </li>
-                <li>
-                  <a href="#about" className="text-foreground/70 hover:text-omiwo-blue dark:hover:text-blue-400 transition-colors">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-foreground/70 hover:text-omiwo-blue dark:hover:text-blue-400 transition-colors">
-                    Sustainability
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-foreground/70 hover:text-omiwo-blue dark:hover:text-blue-400 transition-colors">
-                    Blog
-                  </a>
-                </li>
-              </ul>
-            </ScrollReveal>
-          </div>
+
           
           {/* Contact Column */}
           <div className="md:col-span-1">
