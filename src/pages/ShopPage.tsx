@@ -98,12 +98,12 @@ const ShopPage = () => {
     setComboProducts([
       {
         id: 'combo-1',
-        name: '2 TC + 2 LD + 5 HW',
+        name: '2 TC + 2 LD + 5 HW  X 2',
         description: 'Complete cleaning package with Toilet Cleaner, Liquid Detergent, and Hand Wash.',
         color: '#4f46e5',
         animationType: 'bubble',
         productType: 'combo',
-        price: 2*10 + 2*10 + 5*2, // 2 TC + 2 LD + 5 HW = 50
+        price: 2*10 + 2*10 + 5*2 + 2*10 + 2*10 + 5*2, // 2 TC + 2 LD + 5 HW = 50
         inStock: true,
         isCombo: true,
         comboItems: '2 Toilet Cleaners + 2 Liquid Detergents + 5 Hand Wash',
@@ -189,12 +189,12 @@ const ShopPage = () => {
       },
       {
         id: 'combo-8',
-        name: '25 Hand Wash',
+        name: '25 Hand Wash  X 2',
         description: 'Bulk pack of our premium Hand Wash.',
         color: '#eab308',
         animationType: 'bubble',
         productType: 'combo',
-        price: 25*2, // 25 HW = 50
+        price: 25*2 + 25*2, // 25 HW = 50
         inStock: true,
         isCombo: true,
         comboItems: '25 Hand Wash bottles',

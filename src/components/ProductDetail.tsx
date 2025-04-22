@@ -160,9 +160,9 @@ const productsData: Record<string, ProductDataType> = {
 const comboProductsData: Record<string, ComboProductType> = {
   'combo-1': {
     id: 'combo-1',
-    name: '2 TC + 2 LD + 5 HW',
+    name: '2 TC + 2 LD + 5 HW  X 2 ',
     description: 'Complete cleaning package with Toilet Cleaner, Liquid Detergent, and Hand Wash.',
-    price: 2*10 + 2*10 + 5*2, // 2 TC + 2 LD + 5 HW = 50
+    price: 2*10 + 2*10 + 5*2 + 2*10 + 2*10 + 5*2, // 2 TC + 2 LD + 5 HW = 50
     image_url: '/images/2 TC 2 LD 5  HW.jpg',
     combo_items: '2 Toilet Cleaners + 2 Liquid Detergents + 5 Hand Wash',
     is_combo: true,
@@ -170,7 +170,7 @@ const comboProductsData: Record<string, ComboProductType> = {
   },
   'combo-2': {
     id: 'combo-2',
-    name: '5 TC + 5 LD + 10 HW',
+    name: '5 TC + 5 LD + 10 HW ',
     description: 'Complete family cleaning package with multiple units of all products.',
     price: 5*10 + 5*10 + 10*2, // 5 TC + 5 LD + 10 HW = 120
     image_url: '/images/5 TC 5 LD  10  HW.jpg',
@@ -230,9 +230,9 @@ const comboProductsData: Record<string, ComboProductType> = {
   },
   'combo-8': {
     id: 'combo-8',
-    name: '25 Hand Wash',
+    name: '25 Hand Wash  X 2',
     description: 'Bulk pack of our premium Hand Wash.',
-    price: 25*2, // 25 HW = 50
+    price: 25*2 + 25*2, // 25 HW = 50
     image_url: '/images/25 HW (1).jpg',
     combo_items: '25 Hand Wash bottles',
     is_combo: true,
