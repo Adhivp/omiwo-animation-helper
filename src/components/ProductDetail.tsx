@@ -778,7 +778,13 @@ const ProductDetail = () => {
                   
                   <div className="mt-6">
                     <div className="flex items-end mb-4">
-                      <span className="text-3xl font-bold text-foreground">₹{product ? 10 : comboProduct ? comboProduct.price : 0}</span>
+                      <span className="text-3xl font-bold text-foreground">
+                        ₹{
+                          product ? 
+                            (product.productType === 'handWash' ? 2 : 10) : 
+                            comboProduct ? comboProduct.price : 0
+                        }
+                      </span>
                       <span className="text-lg text-foreground/70 ml-2">per unit</span>
                     </div>
 
