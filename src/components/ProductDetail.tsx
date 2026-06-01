@@ -36,6 +36,8 @@ interface ProductDataType {
   color: string;
   productType: 'toiletCleaner' | 'detergent' | 'handWash';
   features: { icon: string; title: string; description: string }[];
+  price?: number;
+  shipping_charge?: number;
 }
 
 interface ComboProductType {
@@ -47,6 +49,7 @@ interface ComboProductType {
   combo_items: string;
   is_combo: boolean;
   color?: string;
+  courier_charge?: number;
 }
 
 const productsData: Record<string, ProductDataType> = {
@@ -154,6 +157,78 @@ const productsData: Record<string, ProductDataType> = {
         description: 'Provides continued protection even after washing'
       }
     ]
+  },
+  'ld-bottle': {
+    id: 'ld-bottle',
+    name: 'Premium Liquid Detergent Bottle',
+    tagline: 'Professional Grade Laundry Solution',
+    fullDescription: 'OMIWO Premium Liquid Detergent Bottle is a professional-grade laundry solution designed for superior cleaning performance. With advanced stain-fighting technology and color-safe formulation, it delivers exceptional results on all fabric types while preserving color vibrancy and garment longevity.',
+    ingredients: ['Enzymatic Cleaners', 'Color-safe Surfactants', 'Brightening Agents', 'Natural Fragrances'],
+    benefits: [
+      'Removes tough stains effectively',
+      'Protects color vibrancy',
+      '99.9% germ defense',
+      'Suitable for all fabric types'
+    ],
+    usage: 'Use 30-50ml per standard wash load. For heavily soiled clothes, use up to 70ml.',
+    imageSrc: '/images/LD_bottle.png',
+    color: '#3b82f6',
+    productType: 'detergent',
+    price: 230,
+    shipping_charge: 40,
+    features: [
+      {
+        icon: '🧼',
+        title: 'Deep Cleaning',
+        description: 'Advanced formula tackles tough stains and dirt'
+      },
+      {
+        icon: '🎨',
+        title: 'Color Protection',
+        description: 'Keeps colors bright and prevents fading'
+      },
+      {
+        icon: '⚡',
+        title: 'Fast Acting',
+        description: 'Powerful cleaning in cold and warm water'
+      }
+    ]
+  },
+  'tc-bottle': {
+    id: 'tc-bottle',
+    name: 'Premium Toilet Cleaner Bottle',
+    tagline: 'Professional Bathroom Sanitation',
+    fullDescription: 'OMIWO Premium Toilet Cleaner Bottle delivers professional-grade bathroom sanitation. The powerful formula eliminates stubborn stains, limescale, and harmful germs while leaving your toilet fresh and gleaming. Ideal for maintaining pristine bathroom hygiene.',
+    ingredients: ['Acid-based Cleaners', 'Disinfectants', 'Stain Removers', 'Fresh Fragrance'],
+    benefits: [
+      'Eliminates 99.99% of germs and bacteria',
+      'Removes limescale and rust stains',
+      'Leaves toilet gleaming and fresh',
+      'Under-rim cleaning power'
+    ],
+    usage: 'Apply directly into toilet bowl, let sit for 5-10 minutes, then brush and flush thoroughly.',
+    imageSrc: '/images/TC_bottle.png',
+    color: '#1e3a8a',
+    productType: 'toiletCleaner',
+    price: 110,
+    shipping_charge: 40,
+    features: [
+      {
+        icon: '✨',
+        title: 'Powerful Cleaning',
+        description: 'Removes stubborn stains and limescale buildup'
+      },
+      {
+        icon: '🦠',
+        title: 'Germ Elimination',
+        description: 'Kills 99.99% of harmful bacteria'
+      },
+      {
+        icon: '🌸',
+        title: 'Fresh Fragrance',
+        description: 'Leaves bathroom smelling fresh and clean'
+      }
+    ]
   }
 };
 
@@ -237,6 +312,17 @@ const comboProductsData: Record<string, ComboProductType> = {
     combo_items: '25 Hand Wash bottles',
     is_combo: true,
     color: '#eab308'
+  },
+  'ld-tc-combo': {
+    id: 'ld-tc-combo',
+    name: 'Liquid Detergent + Toilet Cleaner Combo',
+    description: 'Premium combo pack with Liquid Detergent Bottle and Toilet Cleaner Bottle.',
+    price: 799,
+    image_url: '/images/LD_TC_bottle_combo.jpg',
+    combo_items: '1 Liquid Detergent Bottle + 1 Toilet Cleaner Bottle',
+    is_combo: true,
+    color: '#4f46e5',
+    courier_charge: 60
   }
 };
 
@@ -355,11 +441,9 @@ const ProductDetail = () => {
 
   const calculateTotalPrice = () => {
     if (product) {
-      // Check if it's hand wash and use the special price
-      if (product.productType === 'handWash') {
-        return 2 * quantity; // Hand wash is 2rs each
-      }
-      return 10 * quantity; // Other products are 10 each
+      // Use product-specific price if available, otherwise use defaults
+      const price = product.price ? product.price : (product.productType === 'handWash' ? 2 : 10);
+      return price * quantity;
     } else if (comboProduct) {
       return comboProduct.price * quantity;
     }
@@ -379,9 +463,17 @@ const ProductDetail = () => {
     return totalPrice >= 100;
   };
 
-  // Calculate delivery charges based on address
+  // Calculate delivery charges based on product or address
   const calculateDeliveryCharges = () => {
-    // Kerala pincodes start with 67, 68, 69
+    // For products with specific shipping charges
+    if (product?.shipping_charge) {
+      return product.shipping_charge;
+    }
+    // For combos with courier charges
+    if (comboProduct?.courier_charge) {
+      return comboProduct.courier_charge;
+    }
+    // Default: Kerala pincodes start with 67, 68, 69
     const isKerala = userProfile?.postal_code?.match(/^(67|68|69)/);
     return isKerala ? 40 : 0; // ₹40 delivery charge within Kerala, free outside
   };
