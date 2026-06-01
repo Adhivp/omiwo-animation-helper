@@ -42,6 +42,20 @@ const ProductShowcase = () => {
       color: '#eab308', // Changed to yellow (#eab308)
       animationType: 'bubble' as const, 
       productType: 'handWash' as const,
+    },
+    {
+      name: 'Premium Liquid Detergent Bottle',
+      description: 'Professional Grade Laundry Solution with advanced stain-fighting technology.',
+      color: '#3b82f6', // Blue
+      animationType: 'pour' as const, 
+      productType: 'detergent' as const,
+    },
+    {
+      name: 'Premium Toilet Cleaner Bottle',
+      description: 'Professional Bathroom Sanitation with powerful stain removal and germ elimination.',
+      color: '#1e3a8a', // Dark blue
+      animationType: 'bubble' as const, 
+      productType: 'toiletCleaner' as const,
     }
   ];
 
