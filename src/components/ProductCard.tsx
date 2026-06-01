@@ -188,7 +188,7 @@ const ProductCard = ({
               <div className="relative product-container w-full h-full flex items-center justify-center">
                 {/* Background-removed product image overlay with improved visibility */}
                 <img 
-                  src={style.productImage}
+                  src={imageSrc || style.productImage}
                   alt={name} 
                   className="h-52 w-auto max-w-[80%] object-contain transform transition-all duration-500 relative z-10"
                   style={{ 
