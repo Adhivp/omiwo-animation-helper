@@ -21,7 +21,7 @@ const ProductShowcase = () => {
     checkAuth();
   }, []);
   
-  const products = [
+  const mainProducts = [
     {
       name: 'Premium Toilet Cleaner',
       description: 'Microbial Cleaners & Non-Abrasive Cleaning Solutions for effective bathroom hygiene.',
@@ -42,13 +42,17 @@ const ProductShowcase = () => {
       color: '#eab308', // Changed to yellow (#eab308)
       animationType: 'bubble' as const, 
       productType: 'handWash' as const,
-    },
+    }
+  ];
+
+  const newProducts = [
     {
       name: 'Premium Liquid Detergent Bottle',
       description: 'Professional Grade Laundry Solution with advanced stain-fighting technology.',
       color: '#3b82f6', // Blue
       animationType: 'pour' as const, 
       productType: 'detergent' as const,
+      imageSrc: '/images/LD_bottle.png',
     },
     {
       name: 'Premium Toilet Cleaner Bottle',
@@ -56,6 +60,7 @@ const ProductShowcase = () => {
       color: '#1e3a8a', // Dark blue
       animationType: 'bubble' as const, 
       productType: 'toiletCleaner' as const,
+      imageSrc: '/images/TC_bottle.png',
     }
   ];
 
@@ -76,9 +81,9 @@ const ProductShowcase = () => {
           </div>
         </ScrollReveal>
         
-        {/* Product Cards */}
+        {/* Product Cards - Main Collection */}
         <div className="flex flex-col md:flex-row gap-8 mt-12">
-          {products.map((product, index) => (
+          {mainProducts.map((product, index) => (
             <ProductCard 
               key={index}
               name={product.name}
@@ -90,9 +95,33 @@ const ProductShowcase = () => {
             />
           ))}
         </div>
+
+        {/* New Products Section */}
+        <div className="mt-20">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h3 className="text-2xl md:text-3xl font-bold mb-2">New Premium Bottles</h3>
+              <p className="text-foreground/70">Professional-grade solutions in convenient bottles</p>
+            </div>
+          </ScrollReveal>
+          
+          <div className="flex flex-col md:flex-row gap-8 justify-center md:justify-center">
+            {newProducts.map((product, index) => (
+              <ProductCard 
+                key={`new-${index}`}
+                name={product.name}
+                description={product.description}
+                color={product.color}
+                animationType={product.animationType}
+                productType={product.productType}
+                delay={600 + index * 200}
+              />
+            ))}
+          </div>
+        </div>
         
         {/* Call to Action */}
-        <ScrollReveal delay={600}>
+        <ScrollReveal delay={1000}>
           <div className="mt-16 text-center">
             <Link to="/login" className="liquid-button">
               <span className="relative z-10">Sign In to Shop</span>
