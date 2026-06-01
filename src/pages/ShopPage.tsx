@@ -264,7 +264,7 @@ const ShopPage = () => {
       return;
     }
     
-    // For regular products, navigate to product page
+    // For regular products, navigate to product page 
     navigate(`/product/${productId}`);
   };
 
