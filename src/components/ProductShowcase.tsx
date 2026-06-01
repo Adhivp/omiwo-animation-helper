@@ -114,6 +114,7 @@ const ProductShowcase = () => {
                 color={product.color}
                 animationType={product.animationType}
                 productType={product.productType}
+                imageSrc={product.imageSrc}
                 delay={600 + index * 200}
               />
             ))}
