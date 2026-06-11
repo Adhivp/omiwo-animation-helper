@@ -62,10 +62,10 @@ const ShopPage = () => {
         name: 'Premium Toilet Cleaner',
         description: 'Microbial Cleaners & Non-Abrasive Cleaning Solutions for effective bathroom hygiene.',
         color: '#1e3a8a', // Dark blue for toilet cleaner
-        animationType: 'bubble', 
+        animationType: 'bubble',
         productType: 'toiletCleaner',
         price: 10,
-        inStock: true,
+        inStock: false,
         minimumOrder: 100,
         imageSrc: '/images/TC_main.png'
       },
@@ -74,10 +74,10 @@ const ShopPage = () => {
         name: 'Liquid Detergent',
         description: 'Color-safe technology with 99.9% germ defense for all your laundry needs.',
         color: '#3b82f6', // Blue for detergent
-        animationType: 'bubble', 
+        animationType: 'bubble',
         productType: 'detergent',
         price: 10,
-        inStock: true,
+        inStock: false,
         minimumOrder: 100,
         imageSrc: '/images/LD_main.png'
       },
@@ -86,10 +86,10 @@ const ShopPage = () => {
         name: 'Advanced Hand Wash',
         description: 'Antimicrobial Formulations with Long-lasting Protection for gentle hand care.',
         color: '#eab308', // Yellow
-        animationType: 'bubble', 
+        animationType: 'bubble',
         productType: 'handWash',
         price: 2,
-        inStock: true,
+        inStock: false,
         minimumOrder: 100,
         imageSrc: '/images/HW_main.png'
       },

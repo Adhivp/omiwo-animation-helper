@@ -70,6 +70,7 @@ const productsData: Record<string, ProductDataType> = {
     imageSrc: '/images/TC_main.png',
     color: '#1e3a8a',
     productType: 'toiletCleaner',
+    price: 10,
     features: [
       {
         icon: '🔍',
@@ -105,6 +106,7 @@ const productsData: Record<string, ProductDataType> = {
     imageSrc: '/images/LD_main.png',
     color: '#3b82f6',
     productType: 'detergent',
+    price: 10,
     features: [
       {
         icon: '✨',
@@ -140,6 +142,7 @@ const productsData: Record<string, ProductDataType> = {
     imageSrc: '/images/HW_main.png',
     color: '#eab308',
     productType: 'handWash',
+    price: 2,
     features: [
       {
         icon: '🦠',
@@ -442,7 +445,7 @@ const ProductDetail = () => {
   const calculateTotalPrice = () => {
     if (product) {
       // Use product-specific price if available, otherwise use defaults
-      const price = product.price ? product.price : (product.productType === 'handWash' ? 2 : 10);
+      const price = product.price ?? 0;
       return price * quantity;
     } else if (comboProduct) {
       return comboProduct.price * quantity;
@@ -504,7 +507,7 @@ const ProductDetail = () => {
       setIsProcessingPayment(true);
       
       const productName = product ? product.name : comboProduct ? comboProduct.name : '';
-      const productPrice = product ? 10 : comboProduct ? comboProduct.price : 0;
+      const productPrice = product ? (product.price ?? 0) : comboProduct ? comboProduct.price : 0;
       const totalAmount = calculateFinalAmount(); // Include delivery charges
       const isCombo = !!comboProduct;
       
@@ -873,11 +876,7 @@ const ProductDetail = () => {
                   <div className="mt-6">
                     <div className="flex items-end mb-4">
                       <span className="text-3xl font-bold text-foreground">
-                        ₹{
-                          product ? 
-                            (product.productType === 'handWash' ? 2 : 10) : 
-                            comboProduct ? comboProduct.price : 0
-                        }
+                        ₹{product ? product.price : comboProduct ? comboProduct.price : 0}
                       </span>
                       <span className="text-lg text-foreground/70 ml-2">per unit</span>
                     </div>
@@ -937,7 +936,7 @@ const ProductDetail = () => {
                           
                           {/* WhatsApp contact button for assistance */}
                           <Button
-                            onClick={() => window.open(`https://wa.me/917306379513?text=I'm interested in purchasing ${product ? product.name : comboProduct ? comboProduct.name : 'your products'}. Please provide more information.`, '_blank')}
+                            onClick={() => window.open(`https://wa.me/918590295491?text=I'm interested in purchasing ${product ? product.name : comboProduct ? comboProduct.name : 'your products'}. Please provide more information.`, '_blank')}
                             className="bg-green-600 hover:bg-green-700"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 16 16">

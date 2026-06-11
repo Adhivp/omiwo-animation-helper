@@ -94,7 +94,7 @@ const Footer = () => {
               Have questions about our products? Chat with our team directly on WhatsApp for immediate assistance.
             </p>
             <a 
-              href="https://wa.me/917306379513" 
+              href="https://wa.me/918590295491" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center justify-center w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"

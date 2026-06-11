@@ -274,7 +274,7 @@ const BulkOrder = () => {
                       </div>
                       
                       <Button 
-                        onClick={() => window.open(`https://wa.me/917306379513?text=I'm interested in a bulk order for ${productType.name}. I would like to know pricing for [Your Quantity] units.`, '_blank')}
+                        onClick={() => window.open(`https://wa.me/918590295491?text=I'm interested in a bulk order for ${productType.name}. I would like to know pricing for [Your Quantity] units.`, '_blank')}
                         className="w-full py-6 bg-green-600 hover:bg-green-700"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 16 16">
