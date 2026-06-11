@@ -344,17 +344,15 @@ const ProductDetail = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load Razorpay script
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    
+    // Load Razorpay script only if not already loaded
+    if (!document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
     return () => {
-      // Cleanup
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
     };
   }, []);
 
@@ -536,7 +534,7 @@ const ProductDetail = () => {
       if (!order) throw new Error("Failed to create order");
       
       // Step 2: Create a Razorpay order through our Supabase Edge Function
-      const razorpayOrderResponse = await fetch('https://gxwxiaqxtorxxiikfovn.supabase.co/functions/v1/create-razorpay-order', {
+      const razorpayOrderResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-razorpay-order`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -562,6 +560,16 @@ const ProductDetail = () => {
       const razorpayOrderData = await razorpayOrderResponse.json();
       
       // Step 3: Initialize Razorpay checkout
+      // Wait up to 5s for Razorpay SDK to load
+      if (!(window as any).Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+          if (!script) return reject(new Error('Razorpay script not found'));
+          script.addEventListener('load', () => resolve());
+          script.addEventListener('error', () => reject(new Error('Razorpay SDK failed to load')));
+          setTimeout(() => reject(new Error('Razorpay SDK timed out')), 5000);
+        });
+      }
       if (!(window as any).Razorpay) {
         throw new Error('Razorpay SDK failed to load');
       }
@@ -597,7 +605,7 @@ const ProductDetail = () => {
             });
 
             // Step 4: Verify the payment through our Supabase Edge Function
-            const verifyResponse = await fetch('https://gxwxiaqxtorxxiikfovn.supabase.co/functions/v1/verify-razorpay-payment', {
+            const verifyResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-razorpay-payment`, {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
