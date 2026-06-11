@@ -122,6 +122,19 @@ const ShopPage = () => {
     // Combo products
     setComboProducts([
       {
+        id: 'ld-tc-combo',
+        name: 'Liquid Detergent + Toilet Cleaner Combo',
+        description: 'Premium combo pack with Liquid Detergent Bottle and Toilet Cleaner Bottle.',
+        color: '#4f46e5',
+        animationType: 'bubble',
+        productType: 'combo',
+        price: 799,
+        inStock: true,
+        isCombo: true,
+        comboItems: '1 Liquid Detergent Bottle + 1 Toilet Cleaner Bottle',
+        imageSrc: '/images/LD_TC_bottle_combo.jpg'
+      },
+      {
         id: 'combo-1',
         name: '2 TC + 2 LD + 5 HW  X 2',
         description: 'Complete cleaning package with Toilet Cleaner, Liquid Detergent, and Hand Wash.',
@@ -224,19 +237,6 @@ const ShopPage = () => {
         isCombo: true,
         comboItems: '25 Hand Wash bottles',
         imageSrc: '/images/25 HW (1).jpg'
-      },
-      {
-        id: 'ld-tc-combo',
-        name: 'Liquid Detergent + Toilet Cleaner Combo',
-        description: 'Premium combo pack with Liquid Detergent Bottle and Toilet Cleaner Bottle.',
-        color: '#4f46e5',
-        animationType: 'bubble',
-        productType: 'combo',
-        price: 799,
-        inStock: true,
-        isCombo: true,
-        comboItems: '1 Liquid Detergent Bottle + 1 Toilet Cleaner Bottle',
-        imageSrc: '/images/LD_TC_bottle_combo.jpg'
       },
     ]);
   }, [navigate]);
